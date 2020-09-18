@@ -12,7 +12,7 @@ from utils.pretty_print import *
 import tensorflow as tf
 
 
-def load_data(image_folder, label_folder, img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, crop_size=256, pairing_check=True):
+def load_data(image_folder, label_folder, img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, crop_size=256, batch_size=1, pairing_check=True):
     """
         Loads the images and segmentation masks.
     """
@@ -21,22 +21,27 @@ def load_data(image_folder, label_folder, img_size=(286,286), resize_method=tf.i
 
     if pairing_check:
         INFO("Checking of correct image-label file pairing...")
-        image_paths = sorted(np.array(glob(os.path.join(image_folder, '*/*.*'))))
-        label_paths = sorted(np.array(glob(os.path.join(label_folder, '*/*.*'))))
+        image_paths = sorted(np.array(glob(os.path.join(image_folder, '*.*'))))
+        if not image_paths:
+            image_paths = sorted(np.array(glob(os.path.join(image_folder, '*/*.*'))))
+
+        label_paths = sorted(np.array(glob(os.path.join(label_folder, '*.*'))))
+        if not label_paths:
+            label_paths = sorted(np.array(glob(os.path.join(label_folder, '*/*.*'))))
         for img_path, label_path in zip(image_paths, label_paths):
             assert files_match(img_path, label_path), \
                     ERROR_COLOR("The image-label pair (%s, %s) does not seem to be linked. The filenames are different." % (img_path, label_path))
 
     print()
     INFO("Loading images...")
-    images = load_images(image_folder, img_size, crop_size, resize_method=resize_method, color_mode='rgb', normalize=True)
-
+    images = load_images(image_folder, img_size, crop_size, resize_method=resize_method, color_mode='rgb', batch_size=batch_size, normalize=True)
 
     print()
     INFO("Loading segmentation masks...")
-    labels = load_images(label_folder, img_size, crop_size, resize_method=resize_method, color_mode='grayscale', normalize=False)
+    labels = load_images(label_folder, img_size, crop_size, resize_method=resize_method, color_mode='grayscale', batch_size=batch_size, normalize=False)
 
     return images, labels
+
 
 
 def files_match(path1, path2):
@@ -46,7 +51,7 @@ def files_match(path1, path2):
     return os.path.splitext(os.path.basename(path1))[0] == os.path.splitext(os.path.basename(path2))[0]
 
 
-def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod.BICUBIC, color_mode = 'rgb', normalize=True):
+def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod.BICUBIC, color_mode='rgb', batch_size=1, normalize=True):
     """
         Loads, resizes and crops the images from the specified folder.
         If normalize is True, the images are also rescaled to [0,1].
@@ -57,6 +62,7 @@ def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod
                                                                  color_mode = color_mode,
                                                                  image_size = img_size,
                                                                  interpolation = resize_method,
+                                                                 batch_size=batch_size,
                                                                  shuffle=False)
 
     INFO(" - Cropping...")

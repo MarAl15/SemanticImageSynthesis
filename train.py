@@ -1,10 +1,11 @@
 """
-    Loads the data, in addition to building and training the model.
+    Builds and trains the Semantic Image Synthesis model, in addition to loading the data.
 
     Author: Mar Alguacil
 """
 import argparse
-from utils.load_data import *
+from utils.load_data import load_data
+import tensorflow as tf
 
 def parse_args():
     """Particular configuration"""
@@ -50,15 +51,21 @@ def parse_args():
     # CROP IMAGES
     parser.add_argument('--crop_size', type=int, default=256, help='Crop to the width of crop_size.')
 
+    # BATCHES
+    parser.add_argument('--batch_size', type=int, default=1, help='Input batch size')
+
     return parser.parse_args()
 
 def main():
+    gpus= tf.config.experimental.list_physical_devices('GPU')
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+
     # Parse arguments
     args = parse_args()
 
     # ~ with tf.device("/cpu:0"):
-    load_data(args.image_dir, args.label_dir, img_size=(args.img_height,args.img_width), crop_size=args.crop_size, pairing_check=args.pairing_check)
-
+    # Load data from folders
+    images, labels = load_data(args.image_dir, args.label_dir, img_size=(args.img_height,args.img_width), crop_size=args.crop_size, batch_size=args.batch_size, pairing_check=args.pairing_check)
 
 
 if __name__ == '__main__':
