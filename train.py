@@ -23,8 +23,7 @@ def parse_args():
 
     # LOAD DATA FROM FOLDERS
     #  If the error "Input 'filename' of 'ReadFile' Op has type float32 that does not match expected type of string." is thrown,
-    # put all images in a new subdirectory.
-    # E.g.:
+    # create new subdirectories to store them in. For instance,
     #     (Directory structure)
     #     img_train_path/
     #     ...train/
@@ -40,16 +39,16 @@ def parse_args():
     #     --image_dir img_train_path
     #     --label_dir segmask_train_path
     parser.add_argument('--image_dir', type=str, default='./datasets/ADEChallengeData2016/images/training',
-                        help='Directory name where the pictures are located.')
+                        help='Main directory name where the pictures are located.')
     parser.add_argument('--label_dir', type=str, default='./datasets/ADEChallengeData2016/annotations/training',
-                        help='Directory name where the semantic segmentation masks are located.')
+                        help='Main directory name where the semantic segmentation masks are located.')
 
     # RESIZE IMAGES
     parser.add_argument('--img_height', type=int, default=286, help='The height size of image.')
     parser.add_argument('--img_width', type=int, default=286, help='The width size of image. ')
 
     # CROP IMAGES
-    parser.add_argument('--crop_size', type=int, default=256, help='Crop to the width of crop_size.')
+    parser.add_argument('--crop_size', type=int, default=256, help='Desired size of the square crop.')
 
     # BATCHES
     parser.add_argument('--batch_size', type=int, default=1, help='Input batch size')
@@ -65,7 +64,8 @@ def main():
 
     # ~ with tf.device("/cpu:0"):
     # Load data from folders
-    images, labels = load_data(args.image_dir, args.label_dir, img_size=(args.img_height,args.img_width), crop_size=args.crop_size, batch_size=args.batch_size, pairing_check=args.pairing_check)
+    images, labels = load_data(args.image_dir, args.label_dir, img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
+                               batch_size=args.batch_size, pairing_check=args.pairing_check)
 
 
 if __name__ == '__main__':

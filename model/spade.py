@@ -3,8 +3,6 @@
 
     Author: Mar Alguacil
 """
-from utils.pretty_print import *
-
 import tensorflow as tf
 
 
@@ -12,11 +10,9 @@ def spade(segmap, x, k_filters, nhidden=128, kernel_size=(3,3)):
     """
         Spatially-Adaptive Normalization.
 
-          In the SPADE, the segmentation map (|segmap|) is first projected
-        onto an embedding space and then convolved to produce the modulation
-        parameters |alpha| and |beta|. The produced |alpha| and |beta| are
-        multiplied and added to the normalized activation element-wise
-        (Park et al.).
+          In the SPADE, the segmentation map (|segmap|) is first projected onto an embedding space and then convolved to
+        produce the modulation parameters |alpha| and |beta|. The produced |alpha| and |beta| are multiplied and added to
+        the normalized activation element-wise (Park et al.).
     """
     with tf.compat.v1.variable_scope('spade'):
         # Cast the semantic segmentation mask to float
