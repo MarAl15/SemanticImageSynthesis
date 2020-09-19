@@ -11,11 +11,19 @@ def INFO(*msg):
     else:
         print(colored(msg, 'cyan'))
 
+def INFO_COLOR(msg):
+    return colored(msg, 'cyan')
+
+
 def WARN(*msg):
     if (len(msg) == 1):
         print(colored(*msg, 'yellow'))
     else:
         print(colored(msg, 'yellow'))
+
+def WARN_COLOR(msg):
+    return colored(msg, 'yellow')
+
 
 def ERROR(*msg):
     if (len(msg) == 1):
