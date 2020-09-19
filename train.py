@@ -4,8 +4,11 @@
     Author: Mar Alguacil
 """
 import argparse
+from utils.pretty_print import *
 from utils.load_data import load_data
+
 import tensorflow as tf
+
 
 def parse_args():
     """Particular configuration"""
@@ -16,7 +19,7 @@ def parse_args():
     #################
     # CHECK IMAGE-LABEL FILE PAIRING
     parser.add_argument('--pairing_check', dest='pairing_check', action='store_true',
-                        help='If specified, check of correct image-label file pairing (by default).')
+                        help='If specified, check of correct image-label file pairing ' + INFO_COLOR('(by default).'))
     parser.add_argument('--no_pairing_check', dest='pairing_check', action='store_false',
                         help='If specified, skip sanity check of correct image-label file pairing.')
     parser.set_defaults(pairing_check=True)
@@ -39,19 +42,35 @@ def parse_args():
     #     --image_dir img_train_path
     #     --label_dir segmask_train_path
     parser.add_argument('--image_dir', type=str, default='./datasets/ADEChallengeData2016/images/training',
-                        help='Main directory name where the pictures are located.')
+                        help="Main directory name where the pictures are located. "+
+                             INFO_COLOR("(By default: './datasets/ADEChallengeData2016/images/training')"))
     parser.add_argument('--label_dir', type=str, default='./datasets/ADEChallengeData2016/annotations/training',
-                        help='Main directory name where the semantic segmentation masks are located.')
+                        help="Main directory name where the semantic segmentation masks are located. "+
+                             INFO_COLOR("(By default: './datasets/ADEChallengeData2016/annotations/training')"))
 
     # RESIZE IMAGES
-    parser.add_argument('--img_height', type=int, default=286, help='The height size of image.')
-    parser.add_argument('--img_width', type=int, default=286, help='The width size of image. ')
+    parser.add_argument('--img_height', type=int, default=286, help='The height size of image. ' + INFO_COLOR('(By default: 286)'))
+    parser.add_argument('--img_width', type=int, default=286, help='The width size of image. ' + INFO_COLOR('(By default: 286)'))
 
     # CROP IMAGES
-    parser.add_argument('--crop_size', type=int, default=256, help='Desired size of the square crop.')
+    parser.add_argument('--crop_size', type=int, default=256, help='Desired size of the square crop. '+ INFO_COLOR('(By default: 256)'))
 
     # BATCHES
-    parser.add_argument('--batch_size', type=int, default=1, help='Input batch size')
+    parser.add_argument('--batch_size', type=int, default=1, help='Input batch size. ' + INFO_COLOR('(By default: 1)'))
+
+
+    #################
+    #   GENERATOR   #
+    #################
+    parser.add_argument('--num_upsampling_layers', choices=('normal', 'more', 'most'), default='more',
+                        help="If 'more', adds upsampling layer after the second resnet block. \
+                              If 'most', also adds one more upsampling + resnet layer after the last resnet block. " +
+                              INFO_COLOR("(By default: 'more')"))
+    parser.add_argument('--z_dim', type=int, default=256, help='Dimension of the latent z vector. ' +
+                        INFO_COLOR('(By default: 256)'))
+    parser.add_argument('--ngf', type=int, default=64, help='Number of gen filters in first conv layer. ' +
+                        INFO_COLOR('(By default: 64)'))
+
 
     return parser.parse_args()
 
@@ -66,6 +85,7 @@ def main():
     # Load data from folders
     images, labels = load_data(args.image_dir, args.label_dir, img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
                                batch_size=args.batch_size, pairing_check=args.pairing_check)
+
 
 
 if __name__ == '__main__':
