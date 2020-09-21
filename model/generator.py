@@ -4,6 +4,7 @@
     Author: Mar Alguacil
 """
 import tensorflow as tf
+from utils.layers import Conv2d
 from model.spade import spade_resblk, leaky_relu
 
 
@@ -36,30 +37,30 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, nf=64):
         x = tf.reshape(x, [batch_size, s_dim, s_dim, k_init])
 
         # with tf.device("/cpu:0"):
-        x = spade_resblk(segmap, x, k_init)
+        x = spade_resblk(segmap, x, k_init, spectral_norm=True)
 
         x = upsample(x)
-        x = spade_resblk(segmap, x, k_init)
+        x = spade_resblk(segmap, x, k_init, spectral_norm=True)
 
         if num_upsampling_layers in ['more', 'most']:
             x = upsample(x)
 
-        x = spade_resblk(segmap, x, k_init)
+        x = spade_resblk(segmap, x, k_init, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, 8*nf)
+        x = spade_resblk(segmap, x, 8*nf, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, 4*nf)
+        x = spade_resblk(segmap, x, 4*nf, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, 2*nf)
+        x = spade_resblk(segmap, x, 2*nf, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, nf)
+        x = spade_resblk(segmap, x, nf, spectral_norm=True)
 
         if num_upsampling_layers == 'most':
             x = upsample(x)
-            x = spade_resblk(segmap, x, nf//2)
+            x = spade_resblk(segmap, x, nf//2, spectral_norm=True)
 
         x = leaky_relu(x)
-        x = tf.keras.layers.Conv2D(3, kernel_size=3, padding='same')(x)
+        x = Conv2d(x, 3, kernel_size=3, padding=1)
 
         return tf.keras.activations.tanh(x)
 
