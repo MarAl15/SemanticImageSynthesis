@@ -1,11 +1,9 @@
 """
     Generator.
-
-    Author: Mar Alguacil
 """
 import tensorflow as tf
-from utils.layers import Conv2d
-from model.spade import spade_resblk, leaky_relu
+from utils.utils import Conv2d, leaky_relu
+from model.networks.architecture import spade_resblk
 
 
 def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, nf=64):
@@ -65,6 +63,9 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, nf=64):
         return tf.keras.activations.tanh(x)
 
 def upsample(x, scale_factor=2):
+    """
+        Upsamples a given tensor.
+    """
     _, h, w, _ = tf.shape(x)
 
     return tf.image.resize(images=x, size=[h * scale_factor, w * scale_factor],
