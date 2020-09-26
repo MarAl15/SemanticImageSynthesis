@@ -71,6 +71,19 @@ def parse_args():
     parser.add_argument('--ngf', type=int, default=64, help='Number of gen filters in first conv layer. ' +
                         INFO_COLOR('(By default: 64)'))
 
+    #####################
+    #   DISCRIMINATOR   #
+    #####################
+    parser.add_argument('--num_discriminators', type=int, default=2,
+                           help='Number of discriminators to be used in multiscale. ' +
+                                INFO_COLOR("Default: 2"))
+    parser.add_argument('--num_discriminator_layers', type=int, default=4,
+                           help='Number of layers in each discriminator. ' +
+                                INFO_COLOR('Default: 4'))
+    parser.add_argument('--num_discriminator_filters', type=int, default=64,
+                           help='Number of discrimator filters in first convolutional layer. ' +
+                                INFO_COLOR('Default: 64'))
+
 
     return parser.parse_args()
 
