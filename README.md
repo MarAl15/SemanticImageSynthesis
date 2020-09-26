@@ -71,10 +71,14 @@ python train.py
     - `--img_width` The width size of image.
     - `--crop_size`  Desired size of the square crop.
     - `--batch_size` Input batch size.
+- **Generator**
+    - `--num_upsampling_layers`∈{`normal`, `more`, `most`} If `more`, adds upsampling layer after the second resnet block. If `most`, also adds one more upsampling + resnet layer after the last resnet block.
+    - `--z_dim` Dimension of the latent z vector.
+
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.
 
-## References
+## Main references
 
 - _(Park et al.)_ T. Park, M. Liu, T. Wang, J. Zhu. "[Semantic Image Synthesis with Spatially-Adaptive Normalization](https://arxiv.org/abs/1903.07291)"
 
