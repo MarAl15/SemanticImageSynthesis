@@ -72,8 +72,9 @@ python train.py
     - `--crop_size`  Desired size of the square crop.
     - `--batch_size` Input batch size.
 - **Generator**
-    - `--num_upsampling_layers`∈{`normal`, `more`, `most`} If `more`, adds upsampling layer after the second resnet block. If `most`, also adds one more upsampling + resnet layer after the last resnet block.
     - `--z_dim` Dimension of the latent z vector.
+- **Discriminator**
+    - `--num_discriminators` Number of discriminators to be used in multiscale.
 
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.
