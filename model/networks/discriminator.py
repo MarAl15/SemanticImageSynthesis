@@ -10,9 +10,8 @@ def discriminator(segmap, x, num_discriminators=2, num_filters=64, num_layers=4,
     """
         Discriminator.
 
-          The architecture of the discriminator uses a multi-scale design with the Instance
-        Normalization and applies the Spectral Normalization to almost all the convolutional
-        layers of the discriminator.
+          The architecture of the discriminator uses a multi-scale design with the Instance Normalization and
+        applies the Spectral Normalization to almost all the convolutional layers of the discriminator.
     """
     # kw = 4
     # padw = 1 #int(np.ceil((kw - 1.0) / 2))
