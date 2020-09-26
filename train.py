@@ -42,47 +42,50 @@ def parse_args():
     #     --image_dir img_train_path
     #     --label_dir segmask_train_path
     parser.add_argument('--image_dir', type=str, default='./datasets/ADEChallengeData2016/images/training',
-                        help="Main directory name where the pictures are located. "+
-                             INFO_COLOR("(By default: './datasets/ADEChallengeData2016/images/training')"))
+                           help="Main directory name where the pictures are located. " +
+                                 INFO_COLOR("Default: './datasets/ADEChallengeData2016/images/training'"))
     parser.add_argument('--label_dir', type=str, default='./datasets/ADEChallengeData2016/annotations/training',
-                        help="Main directory name where the semantic segmentation masks are located. "+
-                             INFO_COLOR("(By default: './datasets/ADEChallengeData2016/annotations/training')"))
+                           help="Main directory name where the semantic segmentation masks are located. " +
+                                 INFO_COLOR("Default: './datasets/ADEChallengeData2016/annotations/training'"))
 
     # RESIZE IMAGES
-    parser.add_argument('--img_height', type=int, default=286, help='The height size of image. ' + INFO_COLOR('(By default: 286)'))
-    parser.add_argument('--img_width', type=int, default=286, help='The width size of image. ' + INFO_COLOR('(By default: 286)'))
+    parser.add_argument('--img_height', type=int, default=286,
+                           help='The height size of image. ' + INFO_COLOR('Default: 286'))
+    parser.add_argument('--img_width', type=int, default=286,
+                           help='The width size of image. ' + INFO_COLOR('Default: 286'))
 
     # CROP IMAGES
-    parser.add_argument('--crop_size', type=int, default=256, help='Desired size of the square crop. '+ INFO_COLOR('(By default: 256)'))
+    parser.add_argument('--crop_size', type=int, default=256,
+                           help='Desired size of the square crop. ' + INFO_COLOR('Default: 256'))
 
     # BATCHES
-    parser.add_argument('--batch_size', type=int, default=1, help='Input batch size. ' + INFO_COLOR('(By default: 1)'))
+    parser.add_argument('--batch_size', type=int, default=1,
+                           help='Input batch size. ' + INFO_COLOR('Default: 1'))
 
 
     #################
     #   GENERATOR   #
     #################
     parser.add_argument('--num_upsampling_layers', choices=('normal', 'more', 'most'), default='more',
-                        help="If 'more', adds upsampling layer after the second resnet block. \
-                              If 'most', also adds one more upsampling + resnet layer after the last resnet block. " +
-                              INFO_COLOR("(By default: 'more')"))
-    parser.add_argument('--z_dim', type=int, default=256, help='Dimension of the latent z vector. ' +
-                        INFO_COLOR('(By default: 256)'))
-    parser.add_argument('--ngf', type=int, default=64, help='Number of gen filters in first conv layer. ' +
-                        INFO_COLOR('(By default: 64)'))
+                           help="If 'more', adds upsampling layer after the second resnet block. \
+                                 If 'most', also adds one more upsampling + resnet layer after the last resnet block. " +
+                                 INFO_COLOR("Default: 'more'"))
+    parser.add_argument('--z_dim', type=int, default=256,
+                           help='Dimension of the latent z vector. ' + INFO_COLOR('Default: 256'))
+    parser.add_argument('--num_generator_filters', type=int, default=64,
+                           help='Number of generator filters in penultimate convolutional layers. ' +
+                                 INFO_COLOR('Default: 64'))
 
     #####################
     #   DISCRIMINATOR   #
     #####################
     parser.add_argument('--num_discriminators', type=int, default=2,
-                           help='Number of discriminators to be used in multiscale. ' +
-                                INFO_COLOR("Default: 2"))
+                           help='Number of discriminators to be used in multiscale. ' + INFO_COLOR("Default: 2"))
     parser.add_argument('--num_discriminator_layers', type=int, default=4,
-                           help='Number of layers in each discriminator. ' +
-                                INFO_COLOR('Default: 4'))
+                           help='Number of layers in each discriminator. ' + INFO_COLOR('Default: 4'))
     parser.add_argument('--num_discriminator_filters', type=int, default=64,
                            help='Number of discrimator filters in first convolutional layer. ' +
-                                INFO_COLOR('Default: 64'))
+                                 INFO_COLOR('Default: 64'))
 
 
     return parser.parse_args()

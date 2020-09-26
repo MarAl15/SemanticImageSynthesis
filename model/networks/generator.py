@@ -6,7 +6,7 @@ from utils.utils import Conv2d, leaky_relu
 from model.networks.architecture import spade_resblk
 
 
-def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, nf=64):
+def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filters=64):
     """
         Generator.
 
@@ -25,7 +25,7 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, nf=64):
         s_dim = tf.shape(segmap)[1] // (2**num_up_layers)
 
         batch_size = tf.shape(segmap)[0]
-        k_init = 16 * nf
+        k_init = 16 * num_filters
 
         # Sample z from unit normal and reshape the tensor
         if z is None:
@@ -45,17 +45,17 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, nf=64):
 
         x = spade_resblk(segmap, x, k_init, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, 8*nf, spectral_norm=True)
+        x = spade_resblk(segmap, x, 8*num_filters, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, 4*nf, spectral_norm=True)
+        x = spade_resblk(segmap, x, 4*num_filters, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, 2*nf, spectral_norm=True)
+        x = spade_resblk(segmap, x, 2*num_filters, spectral_norm=True)
         x = upsample(x)
-        x = spade_resblk(segmap, x, nf, spectral_norm=True)
+        x = spade_resblk(segmap, x, num_filters, spectral_norm=True)
 
         if num_upsampling_layers == 'most':
             x = upsample(x)
-            x = spade_resblk(segmap, x, nf//2, spectral_norm=True)
+            x = spade_resblk(segmap, x, num_filters//2, spectral_norm=True)
 
         x = leaky_relu(x)
         x = Conv2d(x, 3, kernel_size=3, padding=1)
