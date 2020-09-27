@@ -2,6 +2,7 @@
     Normalizations.
 """
 import tensorflow as tf
+import tensorflow_addons as tfa
 from utils.utils import Conv2d
 
 
@@ -80,3 +81,9 @@ def spectral_normalization(w, n_power_iterations=1):
 
     return w_norm
 
+
+def instance_normalization(x, epsilon=1e-05):
+    """"
+        Applies Instance Normalization
+    """
+    return tfa.layers.InstanceNormalization(epsilon=epsilon, center=True, scale=True)(x)
