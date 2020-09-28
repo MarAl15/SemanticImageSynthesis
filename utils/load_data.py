@@ -7,6 +7,7 @@ import os
 import pathlib
 import numpy as np
 from glob import glob
+from ast import literal_eval
 from utils.pretty_print import *
 
 import tensorflow as tf
@@ -76,3 +77,31 @@ def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod
         images = images.map(normalization_layer, num_parallel_calls=12)
 
     return images
+
+
+def get_all_labels(segmap_dataset, semantic_label_path):
+    """
+        Extracts semantic labels.
+    """
+    if os.path.exists(semantic_label_path) :
+        with open(semantic_label_path, 'r') as f:
+            labels = literal_eval(f.read())
+    else:
+        first = True
+
+        for segmap in segmap_dataset:
+            segmap = tf.reshape(segmap, [-1])
+            segmap_labels, _ = tf.unique(segmap)
+
+            if not first:
+                for x in segmap_labels:
+                    if x not in labels:
+                        labels = np.append(labels, x)
+            else:
+                labels = segmap_labels.numpy()
+                first = False
+
+        with open(semantic_label_path, 'w') as f :
+            f.write(", ".join(str(v) for v in labels))
+
+    return labels

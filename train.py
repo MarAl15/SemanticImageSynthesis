@@ -47,6 +47,9 @@ def parse_args():
     parser.add_argument('--label_dir', type=str, default='./datasets/ADEChallengeData2016/annotations/training',
                            help="Main directory name where the semantic segmentation masks are located. " +
                                  INFO_COLOR("Default: './datasets/ADEChallengeData2016/annotations/training'"))
+    parser.add_argument('--semantic_label_path', type=str, default='./datasets/ADEChallengeData2016/semantic_labels.txt',
+                           help="Filename containing the semantic labels. " +
+                                 INFO_COLOR("Default: './datasets/ADEChallengeData2016/semantic_labels.txt'"))
 
     # RESIZE IMAGES
     parser.add_argument('--img_height', type=int, default=286,
@@ -101,7 +104,6 @@ def main():
     # Load data from folders
     images, labels = load_data(args.image_dir, args.label_dir, img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
                                batch_size=args.batch_size, pairing_check=args.pairing_check)
-
 
 
 if __name__ == '__main__':
