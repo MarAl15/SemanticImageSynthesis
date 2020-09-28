@@ -13,25 +13,27 @@ from utils.pretty_print import *
 import tensorflow as tf
 
 
-def load_data(image_folder, label_folder, img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, crop_size=256, batch_size=1, pairing_check=True):
+def load_data(image_folder, segmap_folder, semantic_label_path,
+              img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR,
+              crop_size=256, batch_size=1, pairing_check=True):
     """
         Loads the images and segmentation masks.
     """
     assert os.path.isdir(image_folder), ERROR_COLOR('%s is not a valid directory'%image_folder)
-    assert os.path.isdir(label_folder), ERROR_COLOR('%s is not a valid directory'%label_folder)
+    assert os.path.isdir(segmap_folder), ERROR_COLOR('%s is not a valid directory'%segmap_folder)
 
     if pairing_check:
-        INFO("Checking of correct image-label file pairing...")
+        INFO("Checking of correct image-segmap file pairing...")
         image_paths = sorted(np.array(glob(os.path.join(image_folder, '*.*'))))
         if not image_paths:
             image_paths = sorted(np.array(glob(os.path.join(image_folder, '*/*.*'))))
 
-        label_paths = sorted(np.array(glob(os.path.join(label_folder, '*.*'))))
-        if not label_paths:
-            label_paths = sorted(np.array(glob(os.path.join(label_folder, '*/*.*'))))
-        for img_path, label_path in zip(image_paths, label_paths):
-            assert files_match(img_path, label_path), \
-                    ERROR_COLOR("The image-label pair (%s, %s) does not seem to be linked. The filenames are different." % (img_path, label_path))
+        segmap_paths = sorted(np.array(glob(os.path.join(segmap_folder, '*.*'))))
+        if not segmap_paths:
+            segmap_paths = sorted(np.array(glob(os.path.join(segmap_folder, '*/*.*'))))
+        for img_path, segmap_path in zip(image_paths, segmap_paths):
+            assert files_match(img_path, segmap_path), \
+                    ERROR_COLOR("The image-segmap pair (%s, %s) does not seem to be linked. The filenames are different." % (img_path, segmap_path))
 
     print()
     INFO("Loading images...")
@@ -39,10 +41,16 @@ def load_data(image_folder, label_folder, img_size=(286,286), resize_method=tf.i
 
     print()
     INFO("Loading segmentation masks...")
-    labels = load_images(label_folder, img_size, crop_size, resize_method=resize_method, color_mode='grayscale', batch_size=batch_size, normalize=False)
+    segmaps = load_images(segmap_folder, img_size, crop_size, resize_method=resize_method, color_mode='grayscale', batch_size=batch_size, normalize=False)
 
-    return images, labels
+    print()
+    INFO("Creating one-hot label maps...")
+    n_labels = len(get_all_labels(segmaps, semantic_label_path))
+    def one_hot(segmap):
+        return tf.one_hot(segmap, n_labels)
+    segmaps_onehot = segmaps.map(one_hot, num_parallel_calls=12)
 
+    return images, segmaps_onehot
 
 
 def files_match(path1, path2):

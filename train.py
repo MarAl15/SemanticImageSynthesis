@@ -102,8 +102,9 @@ def main():
 
     # ~ with tf.device("/cpu:0"):
     # Load data from folders
-    images, labels = load_data(args.image_dir, args.label_dir, img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
-                               batch_size=args.batch_size, pairing_check=args.pairing_check)
+    images, segmaps_onehot = load_data(args.image_dir, args.label_dir, args.semantic_label_path,
+                                       img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
+                                       batch_size=args.batch_size, pairing_check=args.pairing_check)
 
 
 if __name__ == '__main__':
