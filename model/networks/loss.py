@@ -9,13 +9,15 @@ def hinge_loss_discriminator(real, fake):
         Computes hinge loss for discriminator.
     """
     # Real and fake loss
-    return -tf.reduce_mean(tf.minimum(real - 1, 0.0)), -tf.reduce_mean(tf.minimum(-fake - 1, 0.0))
+    return -tf.reduce_mean([tf.reduce_mean(tf.minimum(real_discr[-1] - 1, 0.0)) for real_discr in real]), \
+           -tf.reduce_mean([tf.reduce_mean(tf.minimum(-fake_discr[-1] - 1, 0.0)) for fake_discr in fake])
+
 
 def hinge_loss_generator(fake):
     """
         Computes hinge loss for generator.
     """
-    return -tf.reduce_mean(fake)
+    return -tf.reduce_mean([tf.reduce_mean(fake_discr[-1]) for fake_discr in fake])
 
 
 def kld_loss(mean, log_var):
