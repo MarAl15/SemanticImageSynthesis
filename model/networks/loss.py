@@ -25,3 +25,10 @@ def kld_loss(mean, log_var):
         Computes KL divergence loss.
     """
     return 0.5 * tf.math.reduce_sum(mean*mean + tf.math.exp(log_var) - 1 - log_var)
+
+
+def l1_loss(x, y):
+    """
+        Computes L1 loss.
+    """
+    return tf.math.reduce_mean(tf.math.abs(x, y))
