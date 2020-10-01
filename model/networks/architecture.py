@@ -68,19 +68,26 @@ def initialize_vgg19():
     slice4 = tf.keras.Sequential()
     slice5 = tf.keras.Sequential()
 
+    # for i, layer in enumerate(vgg_pretrained_features):
+        # print(str(i)+') '+layer.name)
 
-    # for layer in vgg_pretrained_features:
-        # print(layer.name)
-
-
+    # block1_conv1
     for i in range(1, 2):
         slice1.add(vgg_pretrained_features[i])
+
+    # block1_conv2, block1_pool, block2_conv1
     for i in range(2, 5):
         slice2.add(vgg_pretrained_features[i])
-    for i in range(7, 8):
+
+    # block2_conv2, block2_pool, block3_conv1
+    for i in range(5, 8):
         slice3.add(vgg_pretrained_features[i])
+
+    # block3_conv2, block3_conv3, block3_conv4, block3_pool, block4_conv1
     for i in range(8, 13):
         slice4.add(vgg_pretrained_features[i])
+
+    # block4_conv2, block4_conv3, block4_conv4, block4_pool, block5_conv1
     for i in range(13, 18):
         slice5.add(vgg_pretrained_features[i])
 
