@@ -2,6 +2,7 @@
     Loss functions.
 """
 import tensorflow as tf
+from model.networks.architecture import VGG19
 
 
 def hinge_loss_discriminator(real, fake):
@@ -32,3 +33,19 @@ def l1_loss(x, y):
         Computes L1 loss.
     """
     return tf.math.reduce_mean(tf.math.abs(x, y))
+
+
+def vgg_loss(x, y):
+    """
+        Computes VGG loss.
+    """
+    x_vgg = VGG19(x)
+    y_vgg = VGG19(y)
+
+    loss = 0.03125 * l1_loss(x_vgg[0], tf.stop_gradient(y_vgg[0]))
+    loss += 0.0625 * l1_loss(x_vgg[1], tf.stop_gradient(y_vgg[1]))
+    loss += 0.125 * l1_loss(x_vgg[2], tf.stop_gradient(y_vgg[2]))
+    loss += 0.25 * l1_loss(x_vgg[3], tf.stop_gradient(y_vgg[3]))
+    loss += l1_loss(x_vgg[4], tf.stop_gradient(y_vgg[4]))
+
+    return loss
