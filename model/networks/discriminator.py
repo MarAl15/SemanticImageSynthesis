@@ -6,9 +6,8 @@ import tensorflow_addons as tfa
 from model.networks.normalizations import spectral_normalization
 from utils.utils import Conv2d, leaky_relu
 
-def discriminator(segmap, x, num_discriminators=2, num_filters=64, num_layers=4, get_intermediate_features=True):
-    """
-        Discriminator.
+def discriminator(segmap, x, num_discriminators=2, num_filters=64, num_layers=4, get_intermediate_features=True, reuse=False):
+    """Discriminator.
 
           The architecture of the discriminator uses a multi-scale design with the Instance Normalization and
         applies the Spectral Normalization to almost all the convolutional layers of the discriminator.
@@ -16,7 +15,7 @@ def discriminator(segmap, x, num_discriminators=2, num_filters=64, num_layers=4,
     # kw = 4
     # padw = 1 #int(np.ceil((kw - 1.0) / 2))
 
-    with tf.compat.v1.variable_scope('Discriminator'):
+    with tf.compat.v1.variable_scope('Discriminator', reuse=reuse):
         result = []
 
         for i in range(num_discriminators):

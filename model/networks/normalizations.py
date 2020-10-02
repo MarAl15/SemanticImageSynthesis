@@ -3,21 +3,17 @@
 """
 import tensorflow as tf
 import tensorflow_addons as tfa
-from utils.utils import Conv2d
+from utils.utils import Conv2d, static_vars
 
 
 def spade(segmap, x, k_filters, nhidden=128, kernel_size=3):
-    """
-        Applies SPatially-Adaptive (DE)normalization (SPADE).
+    """Applies SPatially-Adaptive (DE)normalization (SPADE).
 
           In the SPADE, the segmentation map (|segmap|) is first projected onto an embedding space and then convolved to
         produce the modulation parameters |alpha| and |beta|. The produced |alpha| and |beta| are multiplied and added to
         the normalized activation element-wise (Park et al.).
     """
     with tf.compat.v1.variable_scope('SPADE'):
-        # Cast the semantic segmentation mask to float
-        segmap = tf.cast(segmap, 'float')
-
         # Generate normalized activations
         normalized = batch_normalization(x)
 
@@ -36,18 +32,16 @@ def spade(segmap, x, k_filters, nhidden=128, kernel_size=3):
 
 
 def batch_normalization(x, epsilon=1e-05):
-    """"
-        Applies Batch Normalization.
-    """
+    """"Applies Batch Normalization."""
     mean, variance = tf.nn.moments(x, axes=[0, 1, 2], keepdims=True)
 
     # epsilon -> A small float number to avoid dividing by 0.
     return (x - mean) / tf.sqrt(variance + epsilon)
 
 
+@static_vars(i=0)
 def spectral_normalization(w, n_power_iterations=1):
-    """
-        Applies Spectral Normalization.
+    """Applies Spectral Normalization.
 
         Simple Tensorflow Implementation of Spectral Normalization for Generative Adversarial Networks (ICLR 2018).
         Taken from https://github.com/taki0112/Spectral_Normalization-Tensorflow.
@@ -55,7 +49,9 @@ def spectral_normalization(w, n_power_iterations=1):
     w_shape = w.shape.as_list()
     w = tf.reshape(w, [-1, w_shape[-1]])
 
-    u = tf.compat.v1.get_variable("u", [1, w_shape[-1]], initializer=tf.random_normal_initializer(), trainable=False)
+    u = tf.compat.v1.get_variable("u"+str(spectral_normalization.i), [1, w_shape[-1]], initializer=tf.random_normal_initializer(), trainable=False)
+    spectral_normalization.i+=1
+    # u = tf.random_normal_initializer()(shape=[1, w_shape[-1]])
 
     u_hat = u
     v_hat = None
@@ -83,7 +79,5 @@ def spectral_normalization(w, n_power_iterations=1):
 
 
 def instance_normalization(x, epsilon=1e-05):
-    """"
-        Applies Instance Normalization
-    """
+    """"Applies Instance Normalization"""
     return tfa.layers.InstanceNormalization(epsilon=epsilon, center=True, scale=True)(x)

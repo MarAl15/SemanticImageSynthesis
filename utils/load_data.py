@@ -16,9 +16,7 @@ import tensorflow as tf
 def load_data(image_folder, segmap_folder, semantic_label_path,
               img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR,
               crop_size=256, batch_size=1, pairing_check=True):
-    """
-        Loads the images and segmentation masks.
-    """
+    """Loads the images and segmentation masks."""
     assert os.path.isdir(image_folder), ERROR_COLOR('%s is not a valid directory'%image_folder)
     assert os.path.isdir(segmap_folder), ERROR_COLOR('%s is not a valid directory'%segmap_folder)
 
@@ -45,26 +43,22 @@ def load_data(image_folder, segmap_folder, semantic_label_path,
 
     print()
     INFO("Creating one-hot label maps...")
+    # Transforms the segmentation map to one-hot encoding.
     n_labels = len(get_all_labels(segmaps, semantic_label_path))
     def one_hot(segmap):
         return tf.one_hot(segmap, n_labels)
     segmaps_onehot = segmaps.map(one_hot, num_parallel_calls=12)
 
-    return images, segmaps_onehot
+    return images, segmaps, segmaps_onehot
 
 
 def files_match(path1, path2):
-    """
-        Checks if the filename1 (from path1) and filename2 (from path2) without extension are the same.
-    """
+    """Checks if the filename1 (from path1) and filename2 (from path2) without extension are the same."""
     return os.path.splitext(os.path.basename(path1))[0] == os.path.splitext(os.path.basename(path2))[0]
 
 
 def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod.BICUBIC, color_mode='rgb', batch_size=1, normalize=True):
-    """
-        Loads, resizes and crops the images from the specified folder.
-        If normalize is True, the images are also rescaled to [0,1].
-    """
+    """Loads, resizes and crops the images from the specified folder. If normalize is True, the images are also rescaled to [0,1]."""
     INFO(" - Resizing...")
     images = tf.keras.preprocessing.image_dataset_from_directory(folder,
                                                                  label_mode = None,
@@ -75,7 +69,8 @@ def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod
                                                                  shuffle=False)
 
     INFO(" - Cropping...")
-    images = images.map(lambda img: tf.image.random_crop(img, size=[tf.shape(img)[0], crop_size, crop_size, tf.shape(img)[3]]), num_parallel_calls=12)
+    num_channels = 3 if color_mode=='rgb' else 1
+    images = images.map(lambda img: tf.image.random_crop(img, size=[batch_size, crop_size, crop_size, num_channels]), num_parallel_calls=12)
 
     if (normalize):
         INFO(" - Standardizing...")
@@ -88,9 +83,7 @@ def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod
 
 
 def get_all_labels(segmap_dataset, semantic_label_path):
-    """
-        Extracts semantic labels.
-    """
+    """Extracts semantic labels."""
     if os.path.exists(semantic_label_path) :
         with open(semantic_label_path, 'r') as f:
             labels = literal_eval(f.read())

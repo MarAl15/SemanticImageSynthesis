@@ -7,8 +7,7 @@ from model.networks.architecture import spade_resblk
 
 
 def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filters=64):
-    """
-        Generator.
+    """Generator.
 
           The architecture of the generator consists mainly of a series of SPADE ResBlks with nearest
         neighbor upsampling.
@@ -20,11 +19,11 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filte
         raise ValueError('num_upsampling_layers [%s] not recognized' %
                           num_upsampling_layers)
 
-    with tf.compat.v1.variable_scope('SPADE Generator'):
+    with tf.compat.v1.variable_scope('Generator'):
         # crop_size = segmap_width or segmapt_height
-        s_dim = tf.shape(segmap)[1] // (2**num_up_layers)
+        s_dim = segmap.shape[1] // (2**num_up_layers)
 
-        batch_size = tf.shape(segmap)[0]
+        batch_size = segmap.shape[0]
         k_init = 16 * num_filters
 
         # Sample z from unit normal and reshape the tensor
@@ -63,10 +62,8 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filte
         return tf.keras.activations.tanh(x)
 
 def upsample(x, scale_factor=2):
-    """
-        Upsamples a given tensor.
-    """
-    _, h, w, _ = tf.shape(x)
+    """Upsamples a given tensor."""
+    _, h, w, _ = x.shape
 
     return tf.image.resize(images=x, size=[h * scale_factor, w * scale_factor],
                            method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)

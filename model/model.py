@@ -10,10 +10,10 @@ from model.networks.loss import *
 
 
 class Model(object):
-    def __init__(self, args):
+    def __init__(self, sess, args):
         self.model_name = 'Model'
 
-        # self.sess = sess
+        self.sess = sess
         self.opt = args
 
     def compute_generator_loss(self, segmap_image, real_image):
@@ -72,7 +72,7 @@ class Model(object):
         return discriminator(segmap_image, real_image, self.opt.num_discriminators, self.opt.num_discriminator_filters, self.opt.num_discriminator_layers,
                              get_intermediate_features=get_intermediate_features), \
                discriminator(segmap_image, fake_image, self.opt.num_discriminators, self.opt.num_discriminator_filters, self.opt.num_discriminator_layers,
-                             get_intermediate_features=get_intermediate_features, reuse=True)
+                             get_intermediate_features=get_intermediate_features, reuse=tf.compat.v1.AUTO_REUSE)
 
 
     def generate_fake(self, segmap_image, real_image, compute_kld_loss=True):
@@ -81,7 +81,6 @@ class Model(object):
         KLD_loss = None
 
         if self.opt.use_vae:
-            # z, mean, log_var = encode_z()
             mean, log_var = encoder(real_image, self.opt.crop_size, self.opt.num_generator_filters)
             z = tf.math.multiply(tf.random.normal(tf.shape(mean)), tf.math.exp(0.5 * log_var)) + mean
             if compute_kld_loss:

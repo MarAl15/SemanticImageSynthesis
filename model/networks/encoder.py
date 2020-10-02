@@ -6,8 +6,7 @@ from model.networks.normalizations import instance_normalization
 from utils.utils import Conv2d, leaky_relu
 
 def encoder(x, crop_size, num_filters=64):
-    """
-        Image Encoder.
+    """Image Encoder.
 
           The image enconder consists of 6 stride-2 convolutional layers followed by two linear layers
         to produce the mean and variance of the output distribution.
@@ -16,8 +15,8 @@ def encoder(x, crop_size, num_filters=64):
     # pw = 1 #int(np.ceil((kw - 1.0) / 2))
     last_ndf = num_filters*8
 
-    with tf.compat.v1.variable_scope('Image Encoder'):
-        if tf.shape(x)[1] != 256 or tf.shape(x)[2] != 256:
+    with tf.compat.v1.variable_scope('ImageEncoder'):
+        if x.shape[1] != 256 or x.shape[2] != 256:
             tf.image.resize(images=x, size=[256, 256],
                             method=tf.image.ResizeMethod.BILINEAR)
 
@@ -47,6 +46,6 @@ def encoder(x, crop_size, num_filters=64):
 
         x = leaky_relu(x)
 
-        x = tf.reshape(x, [tf.shape(x)[0], -1])
+        x = tf.reshape(x, [x.shape[0], -1])
         return tf.keras.layers.Dense(256)(x), tf.keras.layers.Dense(256)(x) # mean, variance
 

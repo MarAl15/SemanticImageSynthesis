@@ -6,39 +6,29 @@ from model.networks.architecture import VGG19
 
 
 def hinge_loss_discriminator(real, fake):
-    """
-        Computes hinge loss for discriminator.
-    """
+    """Computes hinge loss for discriminator."""
     # Real and fake loss
     return -tf.reduce_mean([tf.reduce_mean(tf.minimum(real_discr[-1] - 1, 0.0)) for real_discr in real]), \
            -tf.reduce_mean([tf.reduce_mean(tf.minimum(-fake_discr[-1] - 1, 0.0)) for fake_discr in fake])
 
 
 def hinge_loss_generator(fake):
-    """
-        Computes hinge loss for generator.
-    """
+    """Computes hinge loss for generator."""
     return -tf.reduce_mean([tf.reduce_mean(fake_discr[-1]) for fake_discr in fake])
 
 
 def kld_loss(mean, log_var):
-    """
-        Computes KL divergence loss.
-    """
+    """Computes KL divergence loss."""
     return 0.5 * tf.math.reduce_sum(mean*mean + tf.math.exp(log_var) - 1 - log_var)
 
 
 def l1_loss(x, y):
-    """
-        Computes L1 loss.
-    """
-    return tf.math.reduce_mean(tf.math.abs(x, y))
+    """Computes L1 loss."""
+    return tf.math.reduce_mean(tf.math.abs(x - y))
 
 
 def vgg_loss(x, y):
-    """
-        Computes VGG loss.
-    """
+    """Computes VGG loss."""
     x_vgg = VGG19(x)
     y_vgg = VGG19(y)
 
