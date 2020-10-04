@@ -65,6 +65,14 @@ def parse_args():
     parser.add_argument('--batch_size', type=int, default=1,
                            help='Input batch size. ' + INFO_COLOR('Default: 1'))
 
+    ###############
+    #   ENCODER   #
+    ###############
+    parser.add_argument('--use_vae', action='store_true',
+                           help='If specified, enable training with an image encoder.')
+    parser.add_argument('--lambda_kld', type=float, default=0.05,
+                           help="Weight for KLD loss if 'use_vae' is specified. " +
+                                 INFO_COLOR('Default: 0.05'))
 
     #################
     #   GENERATOR   #
@@ -88,8 +96,6 @@ def parse_args():
                            help='Weight for VGG loss. ' + INFO_COLOR('Default: 10.0'))
     parser.add_argument('--no_vgg_loss', action='store_true',
                            help='If specified, do not use VGG feature matching loss.')
-    parser.add_argument('--lambda_kld', type=float, default=0.05,
-                           help='Weight for KLD loss. ' + INFO_COLOR('Default: 0.05'))
 
     #####################
     #   DISCRIMINATOR   #
@@ -101,6 +107,24 @@ def parse_args():
     parser.add_argument('--num_discriminator_filters', type=int, default=64,
                            help='Number of discrimator filters in first convolutional layer. ' +
                                  INFO_COLOR('Default: 64'))
+
+    #################
+    #   OPTIMIZER   #
+    #################
+    parser.add_argument('--lr', type=float, default=0.0002,
+                           help='Initial learning rate for Adam optimizer. ' + INFO_COLOR('Default: 0.0002'))
+    parser.add_argument('--no_TTUR', action='store_true',
+                           help='If specified, do not use TTUR training scheme.')
+    parser.add_argument('--beta1', type=float, default=0.0,
+                           help='Exponential decay rate for the 1st moment for Adam optimizer. ' +
+                                 INFO_COLOR("Default: 0.5 if 'no_TTUR' else 0.0"))
+    parser.add_argument('--beta2', type=float, default=0.9,
+                           help='Exponential decay rate for the 2nd moment for Adam optimizer. ' +
+                                 INFO_COLOR("Default: 0.999 if 'no_TTUR' else 0.9"))
+    # The default values for beta1 and beta2 differ by TTUR option
+    args, _ = parser.parse_known_args()
+    if args.no_TTUR:
+        parser.set_defaults(beta1=0.5, beta2=0.999)
 
     return parser.parse_args()
 

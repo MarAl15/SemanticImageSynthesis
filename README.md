@@ -71,15 +71,19 @@ python train.py
     - `--img_width` The width size of image.
     - `--crop_size`  Desired size of the square crop.
     - `--batch_size` Input batch size.
+- **Image Encoder**
+    - `--use_vae` If specified, enable training with an image encoder.
+    - `--lambda_kld` Weight for KL Divergence loss.
 - **Generator**
     - `--z_dim` Dimension of the latent z vector.
     - `--lambda_features` Weight for feature matching loss.
     - `--lambda_vgg` Weight for VGG loss.
-    - `--lambda_kld` Weight for KL Divergence loss.
 - **Discriminator**
     - `--num_discriminators` Number of discriminators to be used in multiscale.
-
-
+- **Adam Optimizer**
+    - `--lr` Initial learning rate.
+    - `--beta1` Exponential decay rate for the 1st moment.
+    - `--beta2` Exponential decay rate for the 2nd moment.
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.
 
