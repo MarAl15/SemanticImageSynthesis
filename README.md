@@ -73,8 +73,12 @@ python train.py
     - `--batch_size` Input batch size.
 - **Generator**
     - `--z_dim` Dimension of the latent z vector.
+    - `--lambda_features` Weight for feature matching loss.
+    - `--lambda_vgg` Weight for VGG loss.
+    - `--lambda_kld` Weight for KL Divergence loss.
 - **Discriminator**
     - `--num_discriminators` Number of discriminators to be used in multiscale.
+
 
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.

@@ -79,6 +79,18 @@ def parse_args():
                            help='Number of generator filters in penultimate convolutional layers. ' +
                                  INFO_COLOR('Default: 64'))
 
+    parser.add_argument('--lambda_features', type=float, default=10.0,
+                           help='Weight for feature matching loss. '+
+                                 INFO_COLOR('Default: 10.0'))
+    parser.add_argument('--no_feature_loss', action='store_true',
+                           help='If specified, do not use discriminator feature matching loss.')
+    parser.add_argument('--lambda_vgg', type=float, default=10.0,
+                           help='Weight for VGG loss. ' + INFO_COLOR('Default: 10.0'))
+    parser.add_argument('--no_vgg_loss', action='store_true',
+                           help='If specified, do not use VGG feature matching loss.')
+    parser.add_argument('--lambda_kld', type=float, default=0.05,
+                           help='Weight for KLD loss. ' + INFO_COLOR('Default: 0.05'))
+
     #####################
     #   DISCRIMINATOR   #
     #####################
@@ -90,7 +102,6 @@ def parse_args():
                            help='Number of discrimator filters in first convolutional layer. ' +
                                  INFO_COLOR('Default: 64'))
 
-
     return parser.parse_args()
 
 def main():
@@ -101,8 +112,9 @@ def main():
     args = parse_args()
 
     # ~ with tf.device("/cpu:0"):
-    # Load data from folders
-    images, segmaps_onehot = load_data(args.image_dir, args.label_dir, args.semantic_label_path,
+    with tf.compat.v1.Session() as sess:
+        # Load data from folders
+        images, _, segmaps = load_data(args.image_dir, args.label_dir, args.semantic_label_path,
                                        img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
                                        batch_size=args.batch_size, pairing_check=args.pairing_check)
 
