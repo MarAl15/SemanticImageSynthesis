@@ -16,6 +16,21 @@ class Model(object):
         self.sess = sess
         self.opt = args
 
+    def create_optimizers(self, generator_loss, discriminator_loss):
+        """Constructs the generator and discriminator optimizers."""
+        train_vars = tf.compat.v1.trainable_variables()
+        generator_vars = [var for var in train_vars if 'Encoder' in var.name or 'Generator' in var.name]
+        discriminator_vars = [var for var in train_vars if 'Discriminator' in var.name]
+
+        (g_lr, d_lr) = (self.opt.lr/2, self.opt.lr*2) if not self.opt.no_TTUR else (self.opt.lr, self.opt.lr)
+
+        # generator_optimizer, discriminator_optimizer
+        return tf.compat.v1.train.AdamOptimizer(g_lr, beta1=self.opt.beta1, beta2=self.opt.beta2).\
+                  minimize(generator_loss, var_list=generator_vars), \
+               tf.compat.v1.train.AdamOptimizer(d_lr, beta1=self.opt.beta1, beta2=self.opt.beta2).\
+                  minimize(discriminator_loss, var_list=discriminator_vars),
+
+
     def compute_generator_loss(self, segmap_image, real_image):
         """Calculates the different losses related to the generator.
 
