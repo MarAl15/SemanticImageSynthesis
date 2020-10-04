@@ -46,6 +46,7 @@ def load_data(image_folder, segmap_folder, semantic_label_path,
     # Transforms the segmentation map to one-hot encoding.
     n_labels = len(get_all_labels(segmaps, semantic_label_path))
     def one_hot(segmap):
+        segmap = tf.reshape(segmap, [batch_size, crop_size, crop_size])
         return tf.one_hot(segmap, n_labels)
     segmaps_onehot = segmaps.map(one_hot, num_parallel_calls=12)
 
