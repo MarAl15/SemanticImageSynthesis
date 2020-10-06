@@ -36,9 +36,8 @@ class Trainer(object):
         self.real, self.segmap = self.photos_and_segmaps_iterator.get_next()
 
         # Define losses
-        self.generator_losses, self.fake = model.compute_generator_loss(self.segmap, self.real)
+        self.generator_losses, self.discriminator_losses, self.fake = model.compute_losses(self.segmap, self.real)
         self.generator_loss = tf.math.reduce_sum(list(self.generator_losses.values()))
-        self.discriminator_losses = model.compute_discriminator_loss(self.segmap, self.real)
         self.discriminator_loss = tf.math.reduce_sum(list(self.discriminator_losses.values()))
 
         # Construct optimizers

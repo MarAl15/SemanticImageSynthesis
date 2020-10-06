@@ -31,15 +31,18 @@ class Model(object):
                   minimize(discriminator_loss, var_list=discriminator_vars),
 
 
-    def compute_generator_loss(self, segmap_image, real_image):
-        """Calculates the different losses related to the generator.
+    def compute_losses(self, segmap_image, real_image):
+        """Calculates the different losses related to the generator and discriminator.
 
-            Generator hinge loss for the fake image.
-            If use_vae is specified, KLD loss.
-            If no_feature_loss is not specified, average L1 loss of each intermediate output.
-            If no_vgg_loss is not specified, VGG loss.
+            Generator:
+              - Generator hinge loss for the fake image.
+              - If use_vae is specified, KLD loss.
+              - If no_feature_loss is not specified, average L1 loss of each intermediate output.
+              - If no_vgg_loss is not specified, VGG loss.
+            Discriminator:
+              - Discriminator hinge loss for the real and fake image.
         """
-        generator_losses = {}
+        generator_losses, discriminator_losses = {}, {}
 
         if self.opt.use_vae:
             fake_image, generator_losses['KLD'] = self.generate_fake(segmap_image, real_image,
@@ -59,27 +62,17 @@ class Model(object):
                 # Last output is the final prediction, so it is excluded
                 for j in range(len(pred_fake[i])-1): # for each layer output
                     # generator_losses['Feature'] += l1_loss(pred_fake[i][j], pred_real[i][j]) * self.opt.lambda_features/self.opt.num_discriminators
+                    # generator_losses['Feature'] += l1_loss(pred_fake[i][j], tf.stop_gradient(pred_real[i][j]))
                     generator_losses['Feature'] += l1_loss(pred_fake[i][j], pred_real[i][j])
             generator_losses['Feature'] *= self.opt.lambda_features/self.opt.num_discriminators
 
         if not self.opt.no_vgg_loss:
             generator_losses['VGG'] = vgg_loss(real_image, fake_image) * self.opt.lambda_vgg
 
-        return generator_losses, fake_image
-
-    def compute_discriminator_loss(self, segmap_image, real_image):
-        """Calculates the different losses related to the discriminator.
-
-             Discriminator hinge loss for the real and fake image.
-        """
-        discriminator_losses = {}
-
-        fake_image, _ = self.generate_fake(segmap_image, real_image)
-        pred_real, pred_fake = self.discriminate(segmap_image, real_image, fake_image)
-
         discriminator_losses['HingeReal'], discriminator_losses['HingeFake'] = hinge_loss_discriminator(pred_real, pred_fake)
 
-        return discriminator_losses
+        return generator_losses, discriminator_losses, fake_image
+
 
     def discriminate(self, segmap_image, fake_image, real_image, get_intermediate_features=False):
         """Returns the probability of the real_image and fake_image to be real."""
