@@ -89,7 +89,7 @@ class Model(object):
         KLD_loss = None
 
         if self.opt.use_vae:
-            mean, log_var = encoder(real_image, self.opt.crop_size, self.opt.num_generator_filters)
+            mean, log_var = encoder(real_image, self.opt.crop_size, self.opt.num_encoder_filters)
             z = tf.math.multiply(tf.random.normal(tf.shape(mean)), tf.math.exp(0.5 * log_var)) + mean
             if compute_kld_loss:
                 KLD_loss = kld_loss(mean, log_var) * self.opt.lambda_kld

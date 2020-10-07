@@ -89,6 +89,9 @@ def parse_args():
     ###############
     parser.add_argument('--use_vae', action='store_true',
                            help='If specified, enable training with an image encoder.')
+    parser.add_argument('--num_encoder_filters', type=int, default=16,
+                           help='Number of encoder filters in the first convolutional layer. '+
+                                 INFO_COLOR('Default: 16'))
     parser.add_argument('--lambda_kld', type=float, default=0.05,
                            help="Weight for KLD loss if 'use_vae' is specified. " +
                                  INFO_COLOR('Default: 0.05'))
