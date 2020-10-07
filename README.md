@@ -84,6 +84,13 @@ python train.py
     - `--lr` Initial learning rate.
     - `--beta1` Exponential decay rate for the 1st moment.
     - `--beta2` Exponential decay rate for the 2nd moment.
+- **Training**
+    - `--epochs` Total number of epochs.
+    - `--save_img_freq` Frequency to autosave the fake image, associated segmentation map and real image.
+    - `--results_dir` Directory name to save the images.
+    - `--save_model_freq` Frequeny to save the checkpoints.
+    - `--checkpoint_dir` Directory name to save them.
+    - `--checkpoint_filename` Basename to save them.
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.
 

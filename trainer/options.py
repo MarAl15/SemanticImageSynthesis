@@ -65,6 +65,25 @@ def parse_args():
     parser.add_argument('--epochs', type=int, default=200,
                            help='Total number of epochs. ' + INFO_COLOR('Default: 200'))
 
+    # SAVE IMAGES
+    parser.add_argument('--save_img_freq', type=int, default=100,
+                           help='Frequency to autosave the fake image, associated segmentation map and real image. '+
+                                 INFO_COLOR('Default: 100'))
+    parser.add_argument('--results_dir', type=str, default='./results/ADEChallengeData2016/',
+                           help='Directory name to save fake images, segmentation maps and real images. '+
+                                 INFO_COLOR("Default: './results/ADEChallengeData2016/'"))
+
+    # SAVE MODEL
+    parser.add_argument('--save_model_freq', type=int, default=10,
+                           help='Frequeny to save the checkpoints. '+
+                                 INFO_COLOR('Default: 10'))
+    parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints/ADEChallengeData2016/',
+                           help='Directory name to save the checkpoints. '+
+                                 INFO_COLOR("Default: './checkpoints/ADEChallengeData2016/'"))
+    parser.add_argument('--checkpoint_filename', type=str, default='ADEModel',
+                           help='Basename to save the checkpoints. '+
+                                 INFO_COLOR("Default: 'ADEModel'"))
+
     ###############
     #   ENCODER   #
     ###############
