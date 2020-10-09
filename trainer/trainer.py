@@ -60,7 +60,7 @@ class Trainer(object):
                                                                                          self.lr, args.beta1, args.beta2, args.no_TTUR)
 
         # Define model saver
-        self.saver = tf.compat.v1.train.Saver(max_to_keep=20)
+        self.saver = tf.compat.v1.train.Saver(max_to_keep=1)
 
     def train(self):
         # Initialize all variables
@@ -71,33 +71,46 @@ class Trainer(object):
 
         self.start_time = time.time()
 
+        # Restore (checkpoint) the model if it exits
+        checkpoint_step = self.load_model(self.checkpoint_dir)
+        if checkpoint_step != -1:
+            start_epoch = int(checkpoint_step/self.iterations)
+            start_iter =  checkpoint_step - start_epoch*self.iterations + 1
+            if start_iter == self.iterations:
+                start_epoch += 1
+                start_iter = 0
+        else:
+            start_epoch = 0
+            start_iter = 0
+
         if self.batch_size == 1:
             save_imgs = self.save_img
-        for epoch in range(1, self.epochs+1):
+        for epoch in range(start_epoch, self.epochs):
             self.sess.run(self.photos_and_segmaps_iterator.initializer)
-            for batch in range(1, self.iterations+1):
+            for batch in range(start_iter, self.iterations):
                 real_x, fake_x, _, g_loss, g_losses, _, d_loss, d_losses = self.sess.run([self.real, self.fake, self.generator_optimizer, self.generator_loss, self.generator_losses,
                                                       self.discriminator_optimizer, self.discriminator_loss, self.discriminator_losses],
                                                      feed_dict={self.lr: lr})
 
-                # self.print_info(g_loss, d_loss, epoch, batch)
-                self.print_info(g_loss, g_losses, d_loss, d_losses, epoch, batch)
+                self.print_info(g_loss, g_losses, d_loss, d_losses, epoch+1, batch+1)
+                # self.print_info(g_loss, g_losses, d_loss, d_losses, epoch, batch)
 
                 # Save images
-                if np.mod(batch, self.save_img_freq) == 0:
+                if np.mod(batch+1, self.save_img_freq) == 0:
                     # WARN('Saving images [epoch: %d, step: %d]' % (epoch, batch))
-                    # save_imgs(real_x, 'real', epoch, batch)
-                    # save_imgs(real_x, 'real_image', epoch, batch)
-                    # save_imgs(segmap_x, 'segmentation_map', epoch, batch)
-                    save_imgs(fake_x, 'synthesized_image', epoch, batch)
+                    # save_imgs(real_x, 'real_image', epoch+1, batch+1)
+                    # save_imgs(segmap_x, 'segmentation_map', epoch+1, batch+1)
+                    save_imgs(fake_x, 'synthesized_image', epoch+1, batch+1)
 
                 # Save model
-                if np.mod(batch, self.save_model_freq) == 0:
-                    WARN('Saving the latest model [Epoch: %d, Step: %d]' % (epoch, batch))
-                    self.save_model(batch)
+                if np.mod(batch+1, self.save_model_freq) == 0:
+                    WARN('Saving the model at epoch %d and iteration %d.' % (epoch+1, batch+1))
+                    self.save_model(epoch, batch)
 
-        # Save final model
-        self.save_model(batch)
+            start_iter = 0
+            # Save model at the end of the epoch
+            self.save_model(epoch, self.iterations)
+            WARN('Saving the model at end of the epoch %d.' % (epoch+1))
 
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
         msg = "[Epoch: %3d/%3d, Iter: %3d/%3d, Time: %4.4f] - Generator loss: %.3f ~ " % (
@@ -112,11 +125,24 @@ class Trainer(object):
 
         INFO(msg)
 
-    def save_model(self, step):
+    def save_model(self, epoch, iter):
         if not os.path.exists(self.checkpoint_dir):
             os.makedirs(self.checkpoint_dir)
 
-        self.saver.save(self.sess, os.path.join(self.checkpoint_dir, self.checkpoint_filename), global_step=step)
+        self.saver.save(self.sess, os.path.join(self.checkpoint_dir, self.checkpoint_filename), global_step=self.iterations*epoch+iter)
+
+    def load_model(self, checkpoint_dir):
+        print()
+        ckpt = tf.train.get_checkpoint_state(self.checkpoint_dir)
+        if ckpt and ckpt.model_checkpoint_path:
+            INFO(" Restoring checkpoint...")
+
+            ckpt_name = os.path.basename(ckpt.model_checkpoint_path)
+            self.saver.restore(self.sess, os.path.join(checkpoint_dir, ckpt_name))
+            return int(ckpt_name.split('-')[-1])
+
+        WARN ("No checkpoint was found.")
+        return -1
 
     def save_img(self, img, type_img, epoch, step):
         img = tf.reshape(img, img.shape[1:])
