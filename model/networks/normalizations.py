@@ -3,7 +3,7 @@
 """
 import tensorflow as tf
 import tensorflow_addons as tfa
-from utils.utils import Conv2d, static_vars
+from utils.utils import Conv2d
 
 
 def spade(segmap, x, k_filters, nhidden=128, kernel_size=3):
@@ -37,45 +37,6 @@ def batch_normalization(x, epsilon=1e-05):
 
     # epsilon -> A small float number to avoid dividing by 0.
     return (x - mean) / tf.sqrt(variance + epsilon)
-
-
-@static_vars(i=0)
-def spectral_normalization(w, n_power_iterations=1):
-    """Applies Spectral Normalization.
-
-        Simple Tensorflow Implementation of Spectral Normalization for Generative Adversarial Networks (ICLR 2018).
-        Taken from https://github.com/taki0112/Spectral_Normalization-Tensorflow.
-    """
-    w_shape = w.shape.as_list()
-    w = tf.reshape(w, [-1, w_shape[-1]])
-
-    u = tf.compat.v1.get_variable("u"+str(spectral_normalization.i), [1, w_shape[-1]], initializer=tf.random_normal_initializer(), trainable=False)
-    spectral_normalization.i+=1
-    # u = tf.random_normal_initializer()(shape=[1, w_shape[-1]])
-
-    u_hat = u
-    v_hat = None
-    for i in range(n_power_iterations):
-       # Power iteration
-       # Usually n_power_iterations = 1 will be enough
-
-       v_ = tf.matmul(u_hat, tf.transpose(w))
-       v_hat = tf.nn.l2_normalize(v_)
-
-       u_ = tf.matmul(v_hat, w)
-       u_hat = tf.nn.l2_normalize(u_)
-
-    u_hat = tf.stop_gradient(u_hat)
-    v_hat = tf.stop_gradient(v_hat)
-
-    sigma = tf.matmul(tf.matmul(v_hat, w), tf.transpose(u_hat))
-
-    with tf.control_dependencies([u.assign(u_hat)]):
-       w_norm = w / sigma
-       w_norm = tf.reshape(w_norm, w_shape)
-
-
-    return w_norm
 
 
 def instance_normalization(x, epsilon=1e-05):

@@ -3,7 +3,6 @@
 """
 import tensorflow as tf
 import tensorflow_addons as tfa
-from model.networks.normalizations import spectral_normalization
 from utils.utils import Conv2d, leaky_relu
 
 def discriminator(segmap, x, num_discriminators=2, num_filters=64, num_layers=4, get_intermediate_features=True, reuse=False):
@@ -32,8 +31,7 @@ def discriminator(segmap, x, num_discriminators=2, num_filters=64, num_layers=4,
                 nf = min(nf*2, 512)
                 stride = 1 if n == num_layers-1 else 2
 
-                concat = Conv2d(concat, nf, kernel_size=4, padding=1, strides=stride)
-                concat = spectral_normalization(concat)
+                concat = Conv2d(concat, nf, kernel_size=4, padding=1, strides=stride, spectral_norm=True)
                 concat = tfa.layers.InstanceNormalization(epsilon=1e-05, center=True, scale=True)(concat)
                 concat = leaky_relu(concat)
                 intermediate_outputs.append(concat)
