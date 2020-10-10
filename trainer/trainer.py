@@ -38,7 +38,7 @@ class Trainer(object):
         self.init_lr = args.lr
 
         # Initialize model
-        model = Model(args)
+        model = Model(args, True)
 
         # Load and shuffle data
         images, _, segmaps_onehot = load_data(args.image_dir, args.label_dir, args.semantic_label_path,

@@ -10,19 +10,19 @@ from model.networks.loss import *
 
 
 class Model(object):
-    def __init__(self, args):
+    def __init__(self, args, isTrain):
         # Loss weights
         self.lambda_kld = args.lambda_kld
         self.lambda_features = args.lambda_features
         self.lambda_vgg = args.lambda_vgg
 
-        # Use or not image encoder
+        # To use or not image encoder
         self.use_vae = args.use_vae
 
-        # Use or not discriminator feature matching loss
+        # To use or not discriminator feature matching loss
         self.no_feature_loss = args.no_feature_loss
 
-        # Use or not VGG loss
+        # To use or not VGG loss
         self.no_vgg_loss = args.no_vgg_loss
 
         # Discriminator options
@@ -38,6 +38,9 @@ class Model(object):
         self.num_upsampling_layers = args.num_upsampling_layers
         self.num_generator_filters = args.num_generator_filters
         self.z_dim = args.z_dim
+
+        # Training?
+        self.is_train = isTrain
 
     def create_optimizers(self, generator_loss, discriminator_loss, lr, beta1, beta2, no_TTUR=True):
         """Constructs the generator and discriminator optimizers."""
@@ -89,7 +92,7 @@ class Model(object):
             generator_losses['Feature'] *= self.lambda_features/self.num_discriminators
 
         if not self.no_vgg_loss:
-            generator_losses['VGG'] = vgg_loss(real_image, fake_image) * self.lambda_vgg
+            generator_losses['VGG'] = vgg_loss(real_image, fake_image, self.is_train) * self.lambda_vgg
 
         discriminator_losses['HingeReal'], discriminator_losses['HingeFake'] = hinge_loss_discriminator(pred_real, pred_fake)
 

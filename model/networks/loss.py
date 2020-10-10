@@ -2,7 +2,7 @@
     Loss functions.
 """
 import tensorflow as tf
-from model.networks.architecture import VGG19
+from model.networks.architecture import VGG19, initialize_vgg19
 
 
 def hinge_loss_discriminator(real, fake):
@@ -27,10 +27,13 @@ def l1_loss(x, y):
     return tf.math.reduce_mean(tf.math.abs(x - y))
 
 
-def vgg_loss(x, y):
+def vgg_loss(x, y, trainable=False):
     """Computes VGG loss."""
-    x_vgg = VGG19(x)
-    y_vgg = VGG19(y)
+    x = (x + 1) * 127.5
+    y = (y + 1) * 127.5
+    slices = initialize_vgg19(trainable)
+    x_vgg = VGG19(tf.keras.applications.vgg19.preprocess_input(x), trainable, slices)
+    y_vgg = VGG19(tf.keras.applications.vgg19.preprocess_input(y), trainable, slices)
 
     loss = 0.03125 * l1_loss(x_vgg[0], tf.stop_gradient(y_vgg[0]))
     loss += 0.0625 * l1_loss(x_vgg[1], tf.stop_gradient(y_vgg[1]))

@@ -14,6 +14,7 @@ import tensorflow as tf
 
 
 def load_data(image_folder, segmap_folder, semantic_label_path,
+# def load_data(image_folder, segmap_folder,
               img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR,
               crop_size=256, batch_size=1, pairing_check=True):
     """Loads the images and segmentation masks."""
@@ -43,7 +44,7 @@ def load_data(image_folder, segmap_folder, semantic_label_path,
 
     print()
     INFO("Creating one-hot label maps...")
-    # Transforms the segmentation map to one-hot encoding.
+    # #Transforms the segmentation map to one-hot encoding.
     n_labels = len(get_all_labels(segmaps, semantic_label_path))
     def one_hot(segmap):
         segmap = tf.reshape(segmap, [batch_size, crop_size, crop_size])
@@ -51,6 +52,7 @@ def load_data(image_folder, segmap_folder, semantic_label_path,
     segmaps_onehot = segmaps.map(one_hot, num_parallel_calls=12)
 
     return images, segmaps, segmaps_onehot
+    # return images, segmaps
 
 
 def files_match(path1, path2):
@@ -76,9 +78,10 @@ def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod
     if (normalize):
         INFO(" - Standardizing...")
         #  The RGB channel values are in the [0, 255] range. This is not ideal for a neural network.
-        # For this reason, we will standardize values to be in the [0, 1] by using a Rescaling layer.
-        normalization_layer = tf.keras.layers.experimental.preprocessing.Rescaling(1./255)
-        images = images.map(normalization_layer, num_parallel_calls=12)
+        # For this reason, we will standardize values to be in the [-1, 1].
+        def normalize(img):
+            return tf.cast(img, 'float') / 127.5 - 1
+        images = images.map(normalize, num_parallel_calls=12)
 
     return images
 

@@ -35,24 +35,22 @@ def spade_resblk(segmap, x, k_out, spectral_norm=False):
         return x + dx
 
 
-def VGG19(x):
-    if not hasattr(VGG19, "slice1") or \
-       not hasattr(VGG19, "slice2") or \
-       not hasattr(VGG19, "slice3") or \
-       not hasattr(VGG19, "slice4") or \
-       not hasattr(VGG19, "slice5"):
-        slice1, slice2, slice3, slice4, slice5 = initialize_vgg19()
+def VGG19(x, trainable=False, slices=None):
+    if slices == None:
+        slices = initialize_vgg19(trainable)
 
-    h_relu1 = slice1(x)
-    h_relu2 = slice2(h_relu1)
-    h_relu3 = slice3(h_relu2)
-    h_relu4 = slice4(h_relu3)
+    h_relu1 = slices[0](x)
+    h_relu2 = slices[1](h_relu1)
+    h_relu3 = slices[2](h_relu2)
+    h_relu4 = slices[3](h_relu3)
 
-    return [h_relu1, h_relu2, h_relu3, h_relu4, slice5(h_relu4)]
+    return [h_relu1, h_relu2, h_relu3, h_relu4, slices[4](h_relu4)]
 
-def initialize_vgg19():
+def initialize_vgg19(trainable=False):
     model = tf.keras.applications.vgg19.VGG19(weights='imagenet', include_top=False)
-    model.trainable = False
+
+    if not trainable:
+        model.trainable = False
 
     vgg_pretrained_features = model.layers
 
@@ -85,4 +83,4 @@ def initialize_vgg19():
     for i in range(13, 18):
         slice5.add(vgg_pretrained_features[i])
 
-    return slice1, slice2, slice3, slice4, slice5
+    return [slice1, slice2, slice3, slice4, slice5]
