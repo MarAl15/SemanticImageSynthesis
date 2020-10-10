@@ -6,12 +6,15 @@ from utils.utils import Conv2d, weight_initializer, leaky_relu
 from model.networks.architecture import spade_resblk
 
 
-def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filters=64, use_vae=True):
+def generator(segmap_shape, num_upsampling_layers='more', z=None, z_dim=256, num_filters=64, use_vae=True):
     """Generator.
 
           The architecture of the generator consists mainly of a series of SPADE ResBlks with nearest
         neighbor upsampling.
     """
+
+    segmap = tf.keras.layers.Input(shape=segmap_shape[1:])
+
     num_up_layers = 6 if num_upsampling_layers=='more' else \
                     5 if num_upsampling_layers=='normal' else \
                     7
@@ -21,9 +24,9 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filte
 
     with tf.compat.v1.variable_scope('Generator'):
         # crop_size = segmap_width or segmapt_height
-        s_dim = segmap.shape[1] // (2**num_up_layers)
+        s_dim = segmap_shape[1] // (2**num_up_layers)
 
-        batch_size = segmap.shape[0]
+        batch_size = segmap_shape[0]
         k_init = 16 * num_filters
 
         # Sample z from unit normal and reshape the tensor
@@ -61,8 +64,10 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filte
 
         x = leaky_relu(x)
         x = Conv2d(x, 3, kernel_size=3, padding=1)
+        x = tf.keras.activations.tanh(x)
 
-        return tf.keras.activations.tanh(x)
+        return tf.keras.Model(inputs=segmap, outputs=x)
+
 
 def upsample(x, scale_factor=2):
     """Upsamples a given tensor."""
