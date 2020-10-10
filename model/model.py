@@ -119,7 +119,7 @@ class Model(object):
             if compute_kld_loss:
                 KLD_loss = kld_loss(mean, log_var) * self.lambda_kld
 
-        return generator(segmap_image, self.num_upsampling_layers, z, self.z_dim, self.num_generator_filters), \
+        return generator(segmap_image, self.num_upsampling_layers, z, self.z_dim, self.num_generator_filters, self.use_vae), \
                KLD_loss
 
 # def use_gpu():
