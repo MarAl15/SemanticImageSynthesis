@@ -2,7 +2,7 @@
     Generator.
 """
 import tensorflow as tf
-from utils.utils import Conv2d, leaky_relu
+from utils.utils import Conv2d, weight_initializer, leaky_relu
 from model.networks.architecture import spade_resblk
 
 
@@ -30,7 +30,7 @@ def generator(segmap, num_upsampling_layers='more', z=None, z_dim=256, num_filte
         if use_vae:
             if z is None:
                 z = tf.keras.backend.random_normal([batch_size, z_dim], dtype=tf.dtypes.float32)
-            x = tf.keras.layers.Dense(k_init*s_dim*s_dim)(z)
+            x = tf.keras.layers.Dense(k_init*s_dim*s_dim, kernel_initializer=weight_initializer())(z)
             x = tf.reshape(x, [batch_size, s_dim, s_dim, k_init])
         else:
             x = tf.image.resize(images=segmap, size=[s_dim, s_dim],

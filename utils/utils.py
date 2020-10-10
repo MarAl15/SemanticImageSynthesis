@@ -16,9 +16,18 @@ def Conv2d(x, filters, kernel_size, padding=0, mode='CONSTANT', strides=1, spect
         x = tf.pad(x, tf.constant([[0,0], [padding, padding], [padding, padding], [0,0]]), mode)
 
     if spectral_norm:
-        return tfa.layers.SpectralNormalization(tf.keras.layers.Conv2D(filters, kernel_size, strides=strides, use_bias=use_bias), power_iterations=2)(x)
-    return tf.keras.layers.Conv2D(filters, kernel_size, strides=strides, use_bias=use_bias)(x)
+        return tfa.layers.SpectralNormalization(tf.keras.layers.Conv2D(filters, kernel_size, strides=strides,
+                                                                       kernel_initializer=weight_initializer(),
+                                                                       use_bias=use_bias), power_iterations=1)(x)
+    return tf.keras.layers.Conv2D(filters, kernel_size, strides=strides,
+                                  kernel_initializer=weight_initializer(),
+                                  use_bias=use_bias)(x)
 
+def weight_initializer(gain=0.02):
+    """Xavier normal initializer."""
+    # https://pytorch.org/docs/stable/_modules/torch/nn/init.html
+    # initializer = tf.keras.initializers.GlorotNormal()
+    return tf.keras.initializers.VarianceScaling(scale=gain*gain*2.0, mode='fan_avg', distribution='normal')
 
 ##########################
 #  ACTIVATION FUNCTIONS  #

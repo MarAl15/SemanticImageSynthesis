@@ -3,7 +3,7 @@
 """
 import tensorflow as tf
 from model.networks.normalizations import instance_normalization
-from utils.utils import Conv2d, leaky_relu
+from utils.utils import Conv2d, weight_initializer, leaky_relu
 
 def encoder(x, crop_size, num_filters=64):
     """Image Encoder.
@@ -47,5 +47,8 @@ def encoder(x, crop_size, num_filters=64):
         x = leaky_relu(x)
 
         x = tf.reshape(x, [x.shape[0], -1])
-        return tf.keras.layers.Dense(256)(x), tf.keras.layers.Dense(256)(x) # mean, variance
+
+        # mean, variance
+        return tf.keras.layers.Dense(256, kernel_initializer=weight_initializer())(x), \
+               tf.keras.layers.Dense(256, kernel_initializer=weight_initializer())(x)
 
