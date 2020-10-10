@@ -9,6 +9,8 @@ from model.model import Model
 from utils.load_data import load_data
 from utils.pretty_print import *
 
+
+
 class Trainer(object):
     """
       Creates the model and optimizers, and uses them to updates the weights of the network while
@@ -36,7 +38,7 @@ class Trainer(object):
         self.init_lr = args.lr
 
         # Initialize model
-        model = Model(self.sess, args)
+        model = Model(args)
 
         # Load and shuffle data
         images, _, segmaps_onehot = load_data(args.image_dir, args.label_dir, args.semantic_label_path,

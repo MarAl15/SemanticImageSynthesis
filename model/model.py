@@ -10,11 +10,7 @@ from model.networks.loss import *
 
 
 class Model(object):
-    def __init__(self, sess, args):
-        # self.model_name = 'Model'
-
-        self.sess = sess
-
+    def __init__(self, args):
         # Loss weights
         self.lambda_kld = args.lambda_kld
         self.lambda_features = args.lambda_features
