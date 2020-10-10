@@ -5,7 +5,7 @@ import tensorflow as tf
 from model.networks.normalizations import instance_normalization
 from utils.utils import Conv2d, weight_initializer, leaky_relu
 
-def encoder(x, crop_size, num_filters=64):
+def encoder(img_shape, crop_size, num_filters=16):
     """Image Encoder.
 
           The image enconder consists of 6 stride-2 convolutional layers followed by two linear layers
@@ -15,9 +15,12 @@ def encoder(x, crop_size, num_filters=64):
     # pw = 1 #int(np.ceil((kw - 1.0) / 2))
     last_ndf = num_filters*8
 
+    img = tf.keras.layers.Input(shape=img_shape[1:], batch_size=img_shape[0])
+    x = img
+
     with tf.compat.v1.variable_scope('ImageEncoder'):
-        if x.shape[1] != 256 or x.shape[2] != 256:
-            tf.image.resize(images=x, size=[256, 256],
+        if img_shape[1] != 256 or img_shape[2] != 256:
+            x = tf.image.resize(images=x, size=[256, 256],
                             method=tf.image.ResizeMethod.BILINEAR)
 
         x = Conv2d(x, num_filters, kernel_size=3, padding=1, strides=2)
@@ -46,9 +49,10 @@ def encoder(x, crop_size, num_filters=64):
 
         x = leaky_relu(x)
 
-        x = tf.reshape(x, [x.shape[0], -1])
+        x = tf.reshape(x, [img_shape[0], -1])
 
-        # mean, variance
-        return tf.keras.layers.Dense(256, kernel_initializer=weight_initializer())(x), \
-               tf.keras.layers.Dense(256, kernel_initializer=weight_initializer())(x)
+        mean = tf.keras.layers.Dense(256, kernel_initializer=weight_initializer())(x)
+        variance = tf.keras.layers.Dense(256, kernel_initializer=weight_initializer())(x)
+
+        return tf.keras.Model(inputs=img, outputs=[mean, variance])
 
