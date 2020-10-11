@@ -34,9 +34,6 @@ class Trainer(object):
         # Learning rate
         self.lr = args.lr
 
-        # Initialize model
-        # model = Model(args, True)
-
         # Load and shuffle data
         images, segmaps, segmaps_onehot = load_data(args.image_dir, args.label_dir, args.semantic_label_path,
                                      img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
@@ -57,6 +54,9 @@ class Trainer(object):
                                            num_layers=args.num_discriminator_layers,
                                            get_intermediate_features=(not args.no_feature_loss))
 
+        # Initialize model
+        model = Model(args, self.generator, self.discriminator, self.encoder, training=True) if args.use_vae else \
+                Model(args, self.generator, self.discriminator, training=True)
 
         # Define losses
         # self.generator_losses, self.discriminator_losses, self.fake = model.compute_losses(self.segmap, self.real)
