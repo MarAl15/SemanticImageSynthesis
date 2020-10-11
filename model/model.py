@@ -16,15 +16,19 @@ class Model(object):
         self.generator = generator
         # Discriminator
         self.discriminator = discriminator
+        self.num_discriminators = args.num_discriminators
 
         # Loss weights
-        self.lambda_kld = args.lambda_kld
-        self.lambda_features = args.lambda_features
-        self.lambda_vgg = args.lambda_vgg
+        if self.use_vae:
+            self.lambda_kld = args.lambda_kld
         # To use or not discriminator feature matching loss
         self.no_feature_loss = args.no_feature_loss
+        if not self.no_feature_loss:
+            self.lambda_features = args.lambda_features
         # To use or not VGG loss
         self.no_vgg_loss = args.no_vgg_loss
+        if not self.no_vgg_loss:
+            self.lambda_vgg = args.lambda_vgg
 
         # Training?
         self.training = training
@@ -44,29 +48,20 @@ class Model(object):
                   minimize(discriminator_loss, var_list=discriminator_vars),
 
 
-    def compute_losses(self, segmap_image, real_image):
-        """Calculates the different losses related to the generator and discriminator.
+    def compute_generator_loss(self, pred_real, pred_fake, real_image, fake_image, mean_var=None):
+        """Calculates the different losses related to the generator.
 
-            Generator:
-              - Generator hinge loss for the fake image.
-              - If use_vae is specified, KLD loss.
-              - If no_feature_loss is not specified, average L1 loss of each intermediate output.
-              - If no_vgg_loss is not specified, VGG loss.
-            Discriminator:
-              - Discriminator hinge loss for the real and fake image.
+            Generator hinge loss for the fake image.
+            If use_vae is specified, KLD loss.
+            If no_feature_loss is not specified, average L1 loss of each intermediate output.
+            If no_vgg_loss is not specified, VGG loss.
         """
-        generator_losses, discriminator_losses = {}, {}
-
-        if self.use_vae:
-            fake_image, [mean, log_var] = self.generate_fake(segmap_image)
-            generator_losses['KLD'] = kld_loss(mean, log_var) * self.lambda_kld
-        else:
-            fake_image, _ = self.generate_fake(segmap_image, real_image)
-
-        pred_real, pred_fake = self.discriminate(segmap_image, real_image, fake_image,
-                                                 get_intermediate_features=(not self.no_feature_loss))
+        generator_losses = {}
 
         generator_losses['Hinge'] = hinge_loss_generator(pred_fake)
+
+        if self.use_vae:
+            generator_losses['KLD'] = kld_loss(mean_var[0], mean_var[1]) * self.lambda_kld
 
         if not self.no_feature_loss:
             generator_losses['Feature'] = 0.0
@@ -81,9 +76,18 @@ class Model(object):
         if not self.no_vgg_loss:
             generator_losses['VGG'] = vgg_loss(real_image, fake_image, self.training) * self.lambda_vgg
 
+        return tf.math.reduce_sum(list(generator_losses.values())), generator_losses,
+
+    def compute_discriminator_loss(self, pred_real, pred_fake):
+        """Calculates the different losses related to the discriminator.
+
+            Discriminator hinge loss for the real and fake image.
+        """
+        discriminator_losses = {}
+
         discriminator_losses['HingeReal'], discriminator_losses['HingeFake'] = hinge_loss_discriminator(pred_real, pred_fake)
 
-        return generator_losses, discriminator_losses, fake_image
+        return discriminator_losses['HingeReal']+discriminator_losses['HingeFake'], discriminator_losses
 
 
     def discriminate(self, real_image, segmap_image, fake_image):
