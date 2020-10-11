@@ -58,11 +58,6 @@ class Trainer(object):
         model = Model(args, self.generator, self.discriminator, self.encoder, training=True) if args.use_vae else \
                 Model(args, self.generator, self.discriminator, training=True)
 
-        # Define losses
-        # self.generator_losses, self.discriminator_losses, self.fake = model.compute_losses(self.segmap, self.real)
-        # self.generator_loss = tf.math.reduce_sum(list(self.generator_losses.values()))
-        # self.discriminator_loss = tf.math.reduce_sum(list(self.discriminator_losses.values()))
-
         # Construct optimizers
         self.generator_optimizer, self.discriminator_optimizer = self.model.create_optimizers(self.lr, args.beta1, args.beta2, args.no_TTUR)
 
