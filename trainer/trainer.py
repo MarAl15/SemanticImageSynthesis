@@ -64,8 +64,7 @@ class Trainer(object):
         # self.discriminator_loss = tf.math.reduce_sum(list(self.discriminator_losses.values()))
 
         # Construct optimizers
-        # self.generator_optimizer, self.discriminator_optimizer = model.create_optimizers(self.generator_loss, self.discriminator_loss,
-                                                                                         # self.lr, args.beta1, args.beta2, args.no_TTUR)
+        self.generator_optimizer, self.discriminator_optimizer = self.model.create_optimizers(self.lr, args.beta1, args.beta2, args.no_TTUR)
 
         # Define model saver
 

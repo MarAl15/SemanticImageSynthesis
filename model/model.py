@@ -33,19 +33,13 @@ class Model(object):
         # Training?
         self.training = training
 
-    def create_optimizers(self, generator_loss, discriminator_loss, lr, beta1, beta2, no_TTUR=True):
+    def create_optimizers(self, lr, beta1, beta2, no_TTUR=True):
         """Constructs the generator and discriminator optimizers."""
-        train_vars = tf.compat.v1.trainable_variables()
-        generator_vars = [var for var in train_vars if 'Encoder' in var.name or 'Generator' in var.name]
-        discriminator_vars = [var for var in train_vars if 'Discriminator' in var.name]
-
         (g_lr, d_lr) = (lr/2, lr*2) if not no_TTUR else (lr, lr)
 
         # generator_optimizer, discriminator_optimizer
-        return tf.compat.v1.train.AdamOptimizer(g_lr, beta1=beta1, beta2=beta2).\
-                  minimize(generator_loss, var_list=generator_vars), \
-               tf.compat.v1.train.AdamOptimizer(d_lr, beta1=beta1, beta2=beta2).\
-                  minimize(discriminator_loss, var_list=discriminator_vars),
+        return tf.keras.optimizers.Adam(g_lr, beta_1=beta1, beta_2=beta2), \
+               tf.keras.optimizers.Adam(d_lr, beta_1=beta1, beta_2=beta2)
 
 
     def compute_generator_loss(self, pred_real, pred_fake, real_image, fake_image, mean_var=None):
