@@ -8,19 +8,17 @@ from trainer.options import parse_args
 
 
 def main():
+    gpus= tf.config.experimental.list_physical_devices('GPU')
+    tf.config.experimental.set_memory_growth(gpus[0], True)
+
     # Parse arguments
     args = parse_args()
 
     # ~ with tf.device("/cpu:0"):
-    config = tf.compat.v1.ConfigProto()
-    config.gpu_options.allow_growth = True
 
-    with tf.compat.v1.Session(config=config) as sess:
-        # Initialize trainer
-        trainer = Trainer(sess, args)
+    # Initialize trainer
+    trainer = Trainer(args)
 
-        # Train
-        trainer.train()
 
 
 
