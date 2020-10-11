@@ -85,13 +85,11 @@ class Model(object):
         return generator_losses, discriminator_losses, fake_image
 
 
-    def discriminate(self, segmap_image, fake_image, real_image, get_intermediate_features=False):
-        """Returns the probability of the real_image and fake_image to be real."""
+    def discriminate(self, real_image, segmap_image, fake_image):
+        """Returns the prediction of the real and fake image."""
         #pred_real, pred_fake
-        return discriminator(segmap_image, real_image, self.num_discriminators, self.num_discriminator_filters, self.num_discriminator_layers,
-                             get_intermediate_features=get_intermediate_features), \
-               discriminator(segmap_image, fake_image, self.num_discriminators, self.num_discriminator_filters, self.num_discriminator_layers,
-                             get_intermediate_features=get_intermediate_features, reuse=tf.compat.v1.AUTO_REUSE)
+        return self.discriminator([real_image, segmap_image], training=True), \
+               self.discriminator([fake_image, segmap_image], training=True)
 
 
     def generate_fake(self, segmap_image, real_image=None):
