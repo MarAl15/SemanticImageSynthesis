@@ -58,7 +58,8 @@ class Model(object):
         generator_losses, discriminator_losses = {}, {}
 
         if self.use_vae:
-            fake_image, generator_losses['KLD'] = self.generate_fake(segmap_image)
+            fake_image, [mean, log_var] = self.generate_fake(segmap_image)
+            generator_losses['KLD'] = kld_loss(mean, log_var) * self.lambda_kld
         else:
             fake_image, _ = self.generate_fake(segmap_image, real_image)
 
@@ -95,13 +96,12 @@ class Model(object):
     def generate_fake(self, segmap_image, real_image=None):
         """Creates a fake image from the segmentation map of another image."""
         if self.use_vae:
-            mean, log_var = self.encoder(real_image)
+            mean, log_var = self.encoder(real_image, training=True)
             z = tf.math.multiply(tf.random.normal(mean.shape), tf.math.exp(0.5 * log_var)) + mean
-            KLD_loss = kld_loss(mean, log_var) * self.lambda_kld
 
-            return self.generator([segmap_image, z]), KLD_loss
+            return self.generator([segmap_image, z]), [mean, log_var]
 
-        return self.generator(segmap_image), None
+        return self.generator(segmap_image, training=True), None
 
 
 # def use_gpu():
