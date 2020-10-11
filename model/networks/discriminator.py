@@ -5,7 +5,7 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from utils.utils import Conv2d, leaky_relu
 
-def discriminator(img_shape, segmap_shape, num_discriminators=2, num_filters=64, num_layers=4, get_intermediate_features=True, reuse=False):
+def discriminator(img_shape, segmap_shape, num_discriminators=2, num_filters=64, num_layers=4, get_intermediate_features=True):
     """Discriminator.
 
           The architecture of the discriminator uses a multi-scale design with the Instance Normalization and
@@ -17,7 +17,7 @@ def discriminator(img_shape, segmap_shape, num_discriminators=2, num_filters=64,
     label_img = tf.keras.layers.Input(shape=segmap_shape[1:], name='segmentation_map')
     x, segmap = input_img, label_img
 
-    with tf.compat.v1.variable_scope('Discriminator', reuse=reuse):
+    with tf.compat.v1.variable_scope('Discriminator'):
         result = []
 
         for i in range(num_discriminators):
