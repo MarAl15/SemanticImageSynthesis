@@ -6,7 +6,7 @@ from utils.utils import Conv2d, weight_initializer, leaky_relu
 from model.networks.architecture import spade_resblk
 
 
-def generator(segmap_shape, num_upsampling_layers='more', z=None, z_dim=256, num_filters=64, use_vae=True):
+def generator(segmap_shape, z_dim=256, num_upsampling_layers='more', num_filters=64, use_vae=True):
     """Generator.
 
           The architecture of the generator consists mainly of a series of SPADE ResBlks with nearest
@@ -14,6 +14,8 @@ def generator(segmap_shape, num_upsampling_layers='more', z=None, z_dim=256, num
     """
 
     segmap = tf.keras.layers.Input(shape=segmap_shape[1:])
+    if use_vae:
+        z = tf.keras.layers.Input(shape=z_dim)
 
     num_up_layers = 6 if num_upsampling_layers=='more' else \
                     5 if num_upsampling_layers=='normal' else \
@@ -31,8 +33,8 @@ def generator(segmap_shape, num_upsampling_layers='more', z=None, z_dim=256, num
 
         # Sample z from unit normal and reshape the tensor
         if use_vae:
-            if z is None:
-                z = tf.keras.backend.random_normal([batch_size, z_dim], dtype=tf.dtypes.float32)
+            # if z is None:
+                # z = tf.keras.backend.random_normal([batch_size, z_dim], dtype=tf.dtypes.float32)
             x = tf.keras.layers.Dense(k_init*s_dim*s_dim, kernel_initializer=weight_initializer())(z)
             x = tf.reshape(x, [batch_size, s_dim, s_dim, k_init])
         else:
@@ -66,7 +68,8 @@ def generator(segmap_shape, num_upsampling_layers='more', z=None, z_dim=256, num
         x = Conv2d(x, 3, kernel_size=3, padding=1)
         x = tf.keras.activations.tanh(x)
 
-        return tf.keras.Model(inputs=segmap, outputs=x)
+        return tf.keras.Model(inputs=[segmap, z], outputs=x) if use_vae else \
+               tf.keras.Model(inputs=segmap, outputs=x)
 
 
 def upsample(x, scale_factor=2):
