@@ -58,8 +58,7 @@ class Model(object):
         generator_losses, discriminator_losses = {}, {}
 
         if self.use_vae:
-            fake_image, generator_losses['KLD'] = self.generate_fake(segmap_image, real_image,
-                                                                     compute_kld_loss=True)
+            fake_image, generator_losses['KLD'] = self.generate_fake(segmap_image)
         else:
             fake_image, _ = self.generate_fake(segmap_image, real_image)
 
@@ -95,19 +94,17 @@ class Model(object):
                              get_intermediate_features=get_intermediate_features, reuse=tf.compat.v1.AUTO_REUSE)
 
 
-    def generate_fake(self, segmap_image, real_image, compute_kld_loss=True):
+    def generate_fake(self, segmap_image, real_image=None):
         """Creates a fake image from the segmentation map of another image."""
-        z = None
-        KLD_loss = None
-
         if self.use_vae:
-            mean, log_var = encoder(real_image, self.crop_size, self.num_encoder_filters)
-            z = tf.math.multiply(tf.random.normal(tf.shape(mean)), tf.math.exp(0.5 * log_var)) + mean
-            if compute_kld_loss:
-                KLD_loss = kld_loss(mean, log_var) * self.lambda_kld
+            mean, log_var = self.encoder(real_image)
+            z = tf.math.multiply(tf.random.normal(mean.shape), tf.math.exp(0.5 * log_var)) + mean
+            KLD_loss = kld_loss(mean, log_var) * self.lambda_kld
 
-        return generator(segmap_image, self.num_upsampling_layers, z, self.z_dim, self.num_generator_filters, self.use_vae), \
-               KLD_loss
+            return self.generator([segmap_image, z]), KLD_loss
+
+        return self.generator(segmap_image), None
+
 
 # def use_gpu():
     # return len(tf.config.list_physical_devices('GPU'))>0
