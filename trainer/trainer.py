@@ -68,7 +68,7 @@ class Trainer(object):
 
 
     @tf.function
-    def train_step(self, real_image, segmap, epoch):
+    def train_step(self, real_image, segmap, epoch, iteration):
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
             fake_image, mean_var = self.model.generate_fake(segmap, real_image)
 
@@ -83,18 +83,31 @@ class Trainer(object):
             self.generator_optimizer.apply_gradients(zip(generator_gradients, self.generator_vars))
             self.discriminator_optimizer.apply_gradients(zip(discriminator_gradients, self.discriminator_vars))
 
+            self.print_info(total_generator_loss, generator_losses, total_discriminator_loss, discriminator_losses, epoch, iteration)
+
+
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
-        msg = "[Epoch: %3d/%3d, Iter: %3d/%3d, Time: %4.4f] - Generator loss: %.3f ~ " % (
-                    epoch, self.epochs, iteration, self.iterations, time.time() - self.start_time, generator_loss)
+        tf.print("\033[22;33m[Epoch: %3d/%3d, Iter: %3d/%3d] \033[0m" % (
+                              epoch, self.epochs, iteration, self.iterations), end=' ')
 
+        tf.print("\033[01;34mGenerator loss:\033[22;34m", end='')
+        tf_print_float(generator_loss)
+        tf.print('\033[22;32m -', end=' ')
         for key in generator_losses.keys():
-            msg += "%s: %.3f, " % (key, generator_losses[key])
+            # tf.print(key, ": ", tf_round(generator_losses[key]), end=', ', sep='')
+            tf.print(key, ":", end='', sep='')
+            tf_print_float(generator_losses[key])
+            tf.print(', ', end='')
 
-        msg +=  "Discriminator loss: %.3f ~ " % (discriminator_loss)
-        msg +=  "Fake: %.3f, " % (discriminator_losses['HingeFake'])
-        msg +=  "Real: %.3f" % (discriminator_losses['HingeReal'])
-
-        INFO(msg)
+        tf.print("~\033[01;34m Discriminator loss:\033[22;34m", end='')
+        tf_print_float(discriminator_loss)
+        tf.print('\033[22;32m -', end=' ')
+        tf.print("Fake:", end='')
+        tf_print_float(discriminator_losses['HingeFake'])
+        tf.print(',', end=' ')
+        tf.print("Real:", end='')
+        tf_print_float(discriminator_losses['HingeReal'])
+        tf.print('\033[0m', sep='')
 
 
     def save_img(self, img, type_img, epoch, step):
