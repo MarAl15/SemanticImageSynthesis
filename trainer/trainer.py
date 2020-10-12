@@ -13,7 +13,6 @@ from utils.load_data import load_data, get_all_labels
 from utils.pretty_print import *
 
 
-
 class Trainer(object):
     """
       Creates the model and optimizers, and uses them to updates the weights of the network while
@@ -55,14 +54,34 @@ class Trainer(object):
                                            get_intermediate_features=(not args.no_feature_loss))
 
         # Initialize model
-        model = Model(args, self.generator, self.discriminator, self.encoder, training=True) if args.use_vae else \
-                Model(args, self.generator, self.discriminator, training=True)
+        self.model = Model(args, self.generator, self.discriminator, self.encoder, training=True) if args.use_vae else \
+                     Model(args, self.generator, self.discriminator, training=True)
 
         # Construct optimizers
         self.generator_optimizer, self.discriminator_optimizer = self.model.create_optimizers(self.lr, args.beta1, args.beta2, args.no_TTUR)
 
-        # Define model saver
+        # Trainable variables
+        self.generator_vars = self.generator.trainable_variables
+        if args.use_vae:
+            self.generator_vars += self.encoder.trainable_variables
+        self.discriminator_vars = self.discriminator.trainable_variables
 
+
+    @tf.function
+    def train_step(self, real_image, segmap, epoch):
+        with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
+            fake_image, mean_var = self.model.generate_fake(segmap, real_image)
+
+            pred_real, pred_fake = self.model.discriminate(real_image, segmap, fake_image)
+
+            total_generator_loss, generator_losses = self.model.compute_generator_loss(pred_real, pred_fake, real_image, fake_image, mean_var)
+            total_discriminator_loss, discriminator_losses = self.model.compute_discriminator_loss(pred_real, pred_fake)
+
+            generator_gradients = gen_tape.gradient(total_generator_loss, self.generator_vars)
+            discriminator_gradients = disc_tape.gradient(total_discriminator_loss, self.discriminator_vars)
+
+            self.generator_optimizer.apply_gradients(zip(generator_gradients, self.generator_vars))
+            self.discriminator_optimizer.apply_gradients(zip(discriminator_gradients, self.discriminator_vars))
 
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
         msg = "[Epoch: %3d/%3d, Iter: %3d/%3d, Time: %4.4f] - Generator loss: %.3f ~ " % (
