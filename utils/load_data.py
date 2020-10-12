@@ -13,8 +13,7 @@ from utils.pretty_print import *
 import tensorflow as tf
 
 
-def load_data(image_folder, segmap_folder, semantic_label_path,
-# def load_data(image_folder, segmap_folder,
+def load_data(image_folder, segmap_folder,
               img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR,
               crop_size=256, batch_size=1, pairing_check=True):
     """Loads the images and segmentation masks."""
@@ -42,17 +41,18 @@ def load_data(image_folder, segmap_folder, semantic_label_path,
     INFO("Loading segmentation masks...")
     segmaps = load_images(segmap_folder, img_size, crop_size, resize_method=resize_method, color_mode='grayscale', batch_size=batch_size, normalize=False)
 
-    print()
-    INFO("Creating one-hot label maps...")
-    # #Transforms the segmentation map to one-hot encoding.
-    n_labels = len(get_all_labels(segmaps, semantic_label_path))
-    def one_hot(segmap):
-        segmap = tf.reshape(segmap, [batch_size, crop_size, crop_size])
-        return tf.one_hot(segmap, n_labels)
-    segmaps_onehot = segmaps.map(one_hot, num_parallel_calls=12)
+    # print()
+    # INFO("Creating one-hot label maps...")
+    # Transform the segmentation map to one-hot encoding
+    # n_labels = len(get_all_labels(segmaps, semantic_label_path))
+    # def one_hot(segmap):
+        # segmap = tf.squeeze(segmap, -1)
+        # #segmap = tf.reshape(segmap, [batch_size, crop_size, crop_size])
+        # return tf.one_hot(segmap, n_labels)
+    # segmaps_onehot = segmaps.map(one_hot, num_parallel_calls=12)
 
-    return images, segmaps, segmaps_onehot
-    # return images, segmaps
+    # return images, segmaps, segmaps_onehot
+    return images, segmaps
 
 
 def files_match(path1, path2):

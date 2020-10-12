@@ -34,16 +34,16 @@ class Trainer(object):
         self.lr = args.lr
 
         # Load and shuffle data
-        images, segmaps, segmaps_onehot = load_data(args.image_dir, args.label_dir, args.semantic_label_path,
-                                     img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
-                                     batch_size=args.batch_size, pairing_check=args.pairing_check)
-        self.iterations = images.cardinality()//args.batch_size
-        self.photos_and_segmaps = tf.data.Dataset.zip((images, segmaps_onehot)).shuffle(self.iterations, reshuffle_each_iteration=True)
+        images, segmaps = load_data(args.image_dir, args.label_dir,
+                                    img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
+                                    batch_size=args.batch_size, pairing_check=args.pairing_check)
+        self.iterations = int(tf.constant(args.prob_dataset)*tf.cast(images.cardinality()/args.batch_size, 'float'))
+        self.photos_and_segmaps = tf.data.Dataset.zip((images, segmaps)).shuffle(self.iterations, reshuffle_each_iteration=True)
 
         # Define Encoder, Generator, Discriminator
         img_shape = [args.batch_size, args.crop_size, args.crop_size, 3]
-        n_labels = len(get_all_labels(segmaps, args.semantic_label_path))
-        segmap_shape = [args.batch_size, args.crop_size, args.crop_size, n_labels]
+        self.n_labels = len(get_all_labels(segmaps, args.semantic_label_path))
+        segmap_shape = [args.batch_size, args.crop_size, args.crop_size, self.n_labels]
         if args.use_vae:
             self.encoder = encoder(img_shape, crop_size=args.crop_size, num_filters=args.num_encoder_filters)
         self.generator = generator(segmap_shape, num_upsampling_layers=args.num_upsampling_layers,
@@ -70,19 +70,27 @@ class Trainer(object):
     @tf.function
     def train_step(self, real_image, segmap, epoch, iteration):
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
-            fake_image, mean_var = self.model.generate_fake(segmap, real_image)
+            # Transform the segmentation map to one-hot encoding
+            segmap = tf.one_hot(tf.squeeze(segmap, -1), self.n_labels)
 
+            # Generate fake image
+            fake_image, mean_var = self.model.generate_fake(segmap, real_image)
+            # Discriminator predictions
             pred_real, pred_fake = self.model.discriminate(real_image, segmap, fake_image)
 
+            # Losses
             total_generator_loss, generator_losses = self.model.compute_generator_loss(pred_real, pred_fake, real_image, fake_image, mean_var)
             total_discriminator_loss, discriminator_losses = self.model.compute_discriminator_loss(pred_real, pred_fake)
 
+            # Gradients
             generator_gradients = gen_tape.gradient(total_generator_loss, self.generator_vars)
             discriminator_gradients = disc_tape.gradient(total_discriminator_loss, self.discriminator_vars)
 
+            # Optimizers
             self.generator_optimizer.apply_gradients(zip(generator_gradients, self.generator_vars))
             self.discriminator_optimizer.apply_gradients(zip(discriminator_gradients, self.discriminator_vars))
 
+            # Display information
             self.print_info(total_generator_loss, generator_losses, total_discriminator_loss, discriminator_losses, epoch, iteration)
 
 
@@ -94,7 +102,6 @@ class Trainer(object):
         tf_print_float(generator_loss)
         tf.print('\033[22;32m -', end=' ')
         for key in generator_losses.keys():
-            # tf.print(key, ": ", tf_round(generator_losses[key]), end=', ', sep='')
             tf.print(key, ":", end='', sep='')
             tf_print_float(generator_losses[key])
             tf.print(', ', end='')

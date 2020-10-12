@@ -64,6 +64,9 @@ def parse_args():
     ################
     parser.add_argument('--epochs', type=int, default=200,
                            help='Total number of epochs. ' + INFO_COLOR('Default: 200'))
+    parser.add_argument('--prob_dataset', type=int, default=0.6,
+                           help='Percentage of the maximum number elements in the dataset that will be buffered when prefetching. ' +
+                                 INFO_COLOR('Default: 0.6'))
 
     # SAVE IMAGES
     parser.add_argument('--save_img_freq', type=int, default=100,
@@ -80,9 +83,6 @@ def parse_args():
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints/ADEChallengeData2016/',
                            help='Directory name to save the checkpoints. '+
                                  INFO_COLOR("Default: './checkpoints/ADEChallengeData2016/'"))
-    parser.add_argument('--checkpoint_filename', type=str, default='ADEModel',
-                           help='Basename to save the checkpoints. '+
-                                 INFO_COLOR("Default: 'ADEModel'"))
 
     ###############
     #   ENCODER   #
@@ -103,8 +103,6 @@ def parse_args():
                            help="If 'more', adds upsampling layer after the second resnet block. \
                                  If 'most', also adds one more upsampling + resnet layer after the last resnet block. " +
                                  INFO_COLOR("Default: 'more'"))
-    parser.add_argument('--z_dim', type=int, default=256,
-                           help='Dimension of the latent z vector. ' + INFO_COLOR('Default: 256'))
     parser.add_argument('--num_generator_filters', type=int, default=64,
                            help='Number of generator filters in penultimate convolutional layers. ' +
                                  INFO_COLOR('Default: 64'))
@@ -114,8 +112,8 @@ def parse_args():
                                  INFO_COLOR('Default: 10.0'))
     parser.add_argument('--no_feature_loss', action='store_true',
                            help='If specified, do not use discriminator feature matching loss.')
-    parser.add_argument('--lambda_vgg', type=float, default=10.0,
-                           help='Weight for VGG loss. ' + INFO_COLOR('Default: 10.0'))
+    parser.add_argument('--lambda_vgg', type=float, default=0.06,
+                           help='Weight for VGG loss. ' + INFO_COLOR('Default: 0.06'))
     parser.add_argument('--no_vgg_loss', action='store_true',
                            help='If specified, do not use VGG feature matching loss.')
 
