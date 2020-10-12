@@ -29,6 +29,7 @@ class Model(object):
         self.no_vgg_loss = args.no_vgg_loss
         if not self.no_vgg_loss:
             self.lambda_vgg = args.lambda_vgg
+            self.vgg_loss = VGGLoss([args.batch_size, args.crop_size, args.crop_size, 3])
 
         # Training?
         self.training = training
@@ -68,7 +69,7 @@ class Model(object):
             generator_losses['Feature'] *= self.lambda_features/self.num_discriminators
 
         if not self.no_vgg_loss:
-            generator_losses['VGG'] = vgg_loss(real_image, fake_image, self.training) * self.lambda_vgg
+            generator_losses['VGG'] = self.vgg_loss(real_image, fake_image) * self.lambda_vgg
 
         return tf.math.reduce_sum(list(generator_losses.values())), generator_losses,
 

@@ -2,7 +2,7 @@
     Loss functions.
 """
 import tensorflow as tf
-from model.networks.architecture import VGG19, initialize_vgg19
+from model.networks.architecture import VGG19
 
 
 def hinge_loss_discriminator(real, fake):
@@ -27,18 +27,25 @@ def l1_loss(x, y):
     return tf.math.reduce_mean(tf.math.abs(x - y))
 
 
-def vgg_loss(x, y, trainable=False):
+
+class VGGLoss(tf.keras.Model):
     """Computes VGG loss."""
-    x = (x + 1) * 127.5
-    y = (y + 1) * 127.5
-    slices = initialize_vgg19(trainable)
-    x_vgg = VGG19(tf.keras.applications.vgg19.preprocess_input(x), trainable, slices)
-    y_vgg = VGG19(tf.keras.applications.vgg19.preprocess_input(y), trainable, slices)
+    def __init__(self, shape):
+        super(VGGLoss, self).__init__()
+        self.vgg19 = VGG19(shape)
 
-    loss = 0.03125 * l1_loss(x_vgg[0], tf.stop_gradient(y_vgg[0]))
-    loss += 0.0625 * l1_loss(x_vgg[1], tf.stop_gradient(y_vgg[1]))
-    loss += 0.125 * l1_loss(x_vgg[2], tf.stop_gradient(y_vgg[2]))
-    loss += 0.25 * l1_loss(x_vgg[3], tf.stop_gradient(y_vgg[3]))
-    loss += l1_loss(x_vgg[4], tf.stop_gradient(y_vgg[4]))
+    def call(self, x, y):
+        # Expects float input in [-1,1]
+        # VGG19 works with values in the range [0, 255]
+        x = (x + 1) * 127.5
+        y = (y + 1) * 127.5
+        x_vgg = self.vgg19(tf.keras.applications.vgg19.preprocess_input(x))
+        y_vgg = self.vgg19(tf.keras.applications.vgg19.preprocess_input(y))
 
-    return loss
+        loss = 0.03125 * l1_loss(x_vgg[0], tf.stop_gradient(y_vgg[0]))
+        loss += 0.0625 * l1_loss(x_vgg[1], tf.stop_gradient(y_vgg[1]))
+        loss += 0.125 * l1_loss(x_vgg[2], tf.stop_gradient(y_vgg[2]))
+        loss += 0.25 * l1_loss(x_vgg[3], tf.stop_gradient(y_vgg[3]))
+        loss += l1_loss(x_vgg[4], tf.stop_gradient(y_vgg[4]))
+
+        return loss

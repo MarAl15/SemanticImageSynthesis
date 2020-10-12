@@ -35,18 +35,9 @@ def spade_resblk(segmap, x, k_out, spectral_norm=False):
         return x + dx
 
 
-def VGG19(x, trainable=False, slices=None):
-    if slices == None:
-        slices = initialize_vgg19(trainable)
+def VGG19(x_shape, trainable=False):
+    x = tf.keras.layers.Input(shape=x_shape[1:])
 
-    h_relu1 = slices[0](x)
-    h_relu2 = slices[1](h_relu1)
-    h_relu3 = slices[2](h_relu2)
-    h_relu4 = slices[3](h_relu3)
-
-    return [h_relu1, h_relu2, h_relu3, h_relu4, slices[4](h_relu4)]
-
-def initialize_vgg19(trainable=False):
     model = tf.keras.applications.vgg19.VGG19(weights='imagenet', include_top=False)
 
     if not trainable:
@@ -83,4 +74,10 @@ def initialize_vgg19(trainable=False):
     for i in range(13, 18):
         slice5.add(vgg_pretrained_features[i])
 
-    return [slice1, slice2, slice3, slice4, slice5]
+    h_relu1 = slice1(x)
+    h_relu2 = slice2(h_relu1)
+    h_relu3 = slice3(h_relu2)
+    h_relu4 = slice4(h_relu3)
+
+    return tf.keras.Model(inputs=x,
+                          outputs=[h_relu1, h_relu2, h_relu3, h_relu4, slice5(h_relu4)])
