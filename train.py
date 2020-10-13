@@ -19,8 +19,8 @@ def main():
     # Initialize trainer
     trainer = Trainer(args)
 
-
-
+    # Train
+    trainer.fit()
 
 
 if __name__ == '__main__':

@@ -67,6 +67,15 @@ class Trainer(object):
         self.discriminator_vars = discriminator.trainable_variables
 
 
+    def fit(self):
+        self.start_time = time.time()
+        step = 1
+
+        for epoch in range(self.epochs):
+            # Train
+            for n, (real_image, segmap) in self.photos_and_segmaps.take(self.iterations).enumerate():
+                self.train_step(real_image, segmap, epoch+1, n+1)
+
     @tf.function
     def train_step(self, real_image, segmap, epoch, iteration):
         with tf.GradientTape() as gen_tape, tf.GradientTape() as disc_tape:
