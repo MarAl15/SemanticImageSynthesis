@@ -6,7 +6,7 @@ from utils.utils import Conv2d, weight_initializer, leaky_relu
 from model.networks.architecture import spade_resblk
 
 
-def generator(segmap_shape, z_dim=256, num_upsampling_layers='more', num_filters=64, use_vae=True):
+def Generator(segmap_shape, z_dim=256, num_upsampling_layers='more', num_filters=64, use_vae=True):
     """Generator.
 
           The architecture of the generator consists mainly of a series of SPADE ResBlks with nearest

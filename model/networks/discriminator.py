@@ -5,7 +5,7 @@ import tensorflow as tf
 import tensorflow_addons as tfa
 from utils.utils import Conv2d, leaky_relu
 
-def discriminator(img_shape, segmap_shape, num_discriminators=2, num_filters=64, num_layers=4, get_intermediate_features=True):
+def Discriminator(img_shape, segmap_shape, num_discriminators=2, num_filters=64, num_layers=4, get_intermediate_features=True):
     """Discriminator.
 
           The architecture of the discriminator uses a multi-scale design with the Instance Normalization and

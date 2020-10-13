@@ -6,9 +6,9 @@ import time
 import numpy as np
 import tensorflow as tf
 from model.model import Model
-from model.networks.encoder import encoder
-from model.networks.generator import generator
-from model.networks.discriminator import discriminator
+from model.networks.encoder import Encoder
+from model.networks.generator import Generator
+from model.networks.discriminator import Discriminator
 from utils.load_data import load_data, get_all_labels
 from utils.pretty_print import *
 
@@ -45,26 +45,26 @@ class Trainer(object):
         self.n_labels = len(get_all_labels(segmaps, args.semantic_label_path))
         segmap_shape = [args.batch_size, args.crop_size, args.crop_size, self.n_labels]
         if args.use_vae:
-            self.encoder = encoder(img_shape, crop_size=args.crop_size, num_filters=args.num_encoder_filters)
-        self.generator = generator(segmap_shape, num_upsampling_layers=args.num_upsampling_layers,
-                                   num_filters=args.num_generator_filters, use_vae=args.use_vae)
-        self.discriminator = discriminator(img_shape, segmap_shape, num_discriminators=args.num_discriminators,
-                                           num_filters=args.num_discriminator_filters,
-                                           num_layers=args.num_discriminator_layers,
-                                           get_intermediate_features=(not args.no_feature_loss))
+            encoder = Encoder(img_shape, crop_size=args.crop_size, num_filters=args.num_encoder_filters)
+        generator = Generator(segmap_shape, num_upsampling_layers=args.num_upsampling_layers,
+                              num_filters=args.num_generator_filters, use_vae=args.use_vae)
+        discriminator = Discriminator(img_shape, segmap_shape, num_discriminators=args.num_discriminators,
+                                      num_filters=args.num_discriminator_filters,
+                                      num_layers=args.num_discriminator_layers,
+                                      get_intermediate_features=(not args.no_feature_loss))
 
         # Initialize model
-        self.model = Model(args, self.generator, self.discriminator, self.encoder, training=True) if args.use_vae else \
-                     Model(args, self.generator, self.discriminator, training=True)
+        self.model = Model(args, generator, discriminator, encoder, training=True) if args.use_vae else \
+                     Model(args, generator, discriminator, training=True)
 
         # Construct optimizers
         self.generator_optimizer, self.discriminator_optimizer = self.model.create_optimizers(self.lr, args.beta1, args.beta2, args.no_TTUR)
 
         # Trainable variables
-        self.generator_vars = self.generator.trainable_variables
+        self.generator_vars = generator.trainable_variables
         if args.use_vae:
-            self.generator_vars += self.encoder.trainable_variables
-        self.discriminator_vars = self.discriminator.trainable_variables
+            self.generator_vars += encoder.trainable_variables
+        self.discriminator_vars = discriminator.trainable_variables
 
 
     @tf.function
@@ -95,8 +95,8 @@ class Trainer(object):
 
 
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
-        tf.print("\033[22;33m[Epoch: %3d/%3d, Iter: %3d/%3d] \033[0m" % (
-                              epoch, self.epochs, iteration, self.iterations), end=' ')
+        tf.print("\033[22;33m[Epoch: %3d/%d, Iter: " % (epoch, self.epochs), iteration, "/%d," % self.iterations,
+                             " Time: %.3f] \033[0m" % (time.time() - self.start_time), end=' ', sep='')
 
         tf.print("\033[01;34mGenerator loss:\033[22;34m", end='')
         tf_print_float(generator_loss)

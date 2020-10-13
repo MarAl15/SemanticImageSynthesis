@@ -5,7 +5,7 @@ import tensorflow as tf
 from model.networks.normalizations import instance_normalization
 from utils.utils import Conv2d, weight_initializer, leaky_relu
 
-def encoder(img_shape, crop_size, num_filters=16):
+def Encoder(img_shape, crop_size, num_filters=16):
     """Image Encoder.
 
           The image enconder consists of 6 stride-2 convolutional layers followed by two linear layers
