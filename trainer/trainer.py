@@ -25,7 +25,7 @@ class Trainer(object):
 
         # Save model
         self.save_model_freq = args.save_model_freq
-        self.checkpoint_dir = args.checkpoint_dir
+        # self.checkpoint_dir = args.checkpoint_dir
 
         # Training
         self.epochs = args.epochs
@@ -66,24 +66,59 @@ class Trainer(object):
             self.generator_vars += encoder.trainable_variables
         self.discriminator_vars = discriminator.trainable_variables
 
+        # Define de checkpoint-saver
+        self.checkpoint = tf.train.Checkpoint(step=tf.Variable(1),
+                                              generator_optimizer=self.generator_optimizer,
+                                              discriminator_optimizer=self.discriminator_optimizer,
+                                              encoder=encoder,
+                                              generator=generator,
+                                              discriminator=discriminator) if args.use_vae else \
+                          tf.train.Checkpoint(step=tf.Variable(1),
+                                              enerator_optimizer=self.generator_optimizer,
+                                              discriminator_optimizer=self.discriminator_optimizer,
+                                              generator=generator,
+                                              discriminator=discriminator)
+        self.manager_model = tf.train.CheckpointManager(self.checkpoint, args.checkpoint_dir, max_to_keep=3)
+
 
     def fit(self):
         self.start_time = time.time()
-        step = 1
 
-        for epoch in range(self.epochs):
+        # Restore the latest checkpoint in checkpoint_dir
+        self.checkpoint.restore(self.manager_model.latest_checkpoint)
+        print()
+        if self.manager_model.latest_checkpoint:
+            INFO("Checkpoint restored from" + self.manager_model.latest_checkpoint)
+            start_epoch = self.checkpoint.step // self.iterations
+            start_iter = self.checkpoint.step % self.iterations
+        else:
+            WARN("No checkpoint was found. Initializing from scratch.")
+            start_epoch, start_iter = 0, 0
+        print()
+
+        for epoch in range(start_epoch, self.epochs):
             # Train
-            for n, (real_image, segmap) in self.photos_and_segmaps.take(self.iterations).enumerate():
+            for n, (real_image, segmap) in self.photos_and_segmaps.take(self.iterations).enumerate(start=start_iter):
                 fake_image = self.train_step(real_image, segmap, epoch+1, n+1)
 
-                # Save image
-                if (step % self.save_img_freq) == 0:
-                    self.save_img(real_image, 'real_image', epoch, n)
-                    self.save_img(segmap, 'segmentation_map', epoch, n)
-                    self.save_img(fake_image, 'synthesized_image', epoch, n)
+                # Save (checkpoint) model every self.save_model_freq steps
+                if (self.checkpoint.step % self.save_model_freq) == 0:
+                    INFO('Saving model at epoch %d and iteration %d...' % (epoch+1, n+1))
+                    self.manager_model.save()
 
-                step+=1
+                # Save image every self.save_img_freq steps
+                if (self.checkpoint.step % self.save_img_freq) == 0:
+                    self.save_img(real_image, 'real_image', epoch+1, n+1)
+                    self.save_img(segmap, 'segmentation_map', epoch+1, n+1)
+                    self.save_img(fake_image, 'synthesized_image', epoch+1, n+1)
 
+                self.checkpoint.step.assign_add(1)
+
+            # Save (checkpoint) model at the end of each epoch
+            INFO('Saving model at end of the epoch %d...' % (epoch+1, n+1))
+            self.manager_model.save()
+
+            start_iter = 0
 
     @tf.function
     def train_step(self, real_image, segmap, epoch, iteration):
@@ -142,5 +177,5 @@ class Trainer(object):
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
-        tf.keras.preprocessing.image.save_img('{}/epoch{:03d}_iter{:04d}_{}.png'.format(self.results_dir, epoch, iteration, type_img),
+        tf.keras.preprocessing.image.save_img('{}/epoch{:03d}_iter{:05d}_{}.png'.format(self.results_dir, epoch, iteration, type_img),
                                               img)
