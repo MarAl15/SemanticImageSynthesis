@@ -74,7 +74,16 @@ class Trainer(object):
         for epoch in range(self.epochs):
             # Train
             for n, (real_image, segmap) in self.photos_and_segmaps.take(self.iterations).enumerate():
-                self.train_step(real_image, segmap, epoch+1, n+1)
+                fake_image = self.train_step(real_image, segmap, epoch+1, n+1)
+
+                # Save image
+                if (step % self.save_img_freq) == 0:
+                    self.save_img(real_image, 'real_image', epoch, n)
+                    self.save_img(segmap, 'segmentation_map', epoch, n)
+                    self.save_img(fake_image, 'synthesized_image', epoch, n)
+
+                step+=1
+
 
     @tf.function
     def train_step(self, real_image, segmap, epoch, iteration):
@@ -102,6 +111,8 @@ class Trainer(object):
             # Display information
             self.print_info(total_generator_loss, generator_losses, total_discriminator_loss, discriminator_losses, epoch, iteration)
 
+            return fake_image
+
 
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
         tf.print("\033[22;33m[Epoch: %3d/%d, Iter: " % (epoch, self.epochs), iteration, "/%d," % self.iterations,
@@ -126,11 +137,10 @@ class Trainer(object):
         tf.print('\033[0m', sep='')
 
 
-    def save_img(self, img, type_img, epoch, step):
-        img = tf.reshape(img, img.shape[1:])
+    def save_img(self, img, type_img, epoch, iteration):
+        img = tf.squeeze(img, 0)
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
-        tf.keras.preprocessing.image.save_img(
-            '{}/epoch{:03d}_iter{:04d}_{}.png'.format(self.results_dir, epoch, step, type_img),
-            img)
+        tf.keras.preprocessing.image.save_img('{}/epoch{:03d}_iter{:04d}_{}.png'.format(self.results_dir, epoch, iteration, type_img),
+                                              img)
