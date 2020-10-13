@@ -38,9 +38,16 @@ class Model(object):
         """Constructs the generator and discriminator optimizers."""
         (g_lr, d_lr) = (lr/2, lr*2) if not no_TTUR else (lr, lr)
 
-        # generator_optimizer, discriminator_optimizer
-        return tf.keras.optimizers.Adam(g_lr, beta_1=beta1, beta_2=beta2), \
-               tf.keras.optimizers.Adam(d_lr, beta_1=beta1, beta_2=beta2)
+        generator_optimizer = tf.keras.optimizers.Adam(tf.Variable(g_lr), beta_1=tf.Variable(beta1), beta_2=tf.Variable(beta2), epsilon=tf.Variable(1e-7))
+        discriminator_optimizer = tf.keras.optimizers.Adam(tf.Variable(d_lr), beta_1=tf.Variable(beta1), beta_2=tf.Variable(beta2), epsilon=tf.Variable(1e-7))
+
+        generator_optimizer.iterations  # This access will invoke optimizer._iterations method and create optimizer.iter attribute
+        discriminator_optimizer.iterations
+
+        generator_optimizer.decay = tf.Variable(0.0)  # Adam.__init__ assumes `decay` is a float object, so this needs to be converted to tf.Variable **after** __init__ method.
+        discriminator_optimizer.decay = tf.Variable(0.0)
+
+        return generator_optimizer, discriminator_optimizer
 
 
     def compute_generator_loss(self, pred_real, pred_fake, real_image, fake_image, mean_var=None):

@@ -74,7 +74,7 @@ class Trainer(object):
                                               generator=generator,
                                               discriminator=discriminator) if args.use_vae else \
                           tf.train.Checkpoint(step=tf.Variable(1),
-                                              enerator_optimizer=self.generator_optimizer,
+                                              generator_optimizer=self.generator_optimizer,
                                               discriminator_optimizer=self.discriminator_optimizer,
                                               generator=generator,
                                               discriminator=discriminator)
@@ -88,9 +88,10 @@ class Trainer(object):
         self.checkpoint.restore(self.manager_model.latest_checkpoint)
         print()
         if self.manager_model.latest_checkpoint:
-            INFO("Checkpoint restored from" + self.manager_model.latest_checkpoint)
-            start_epoch = self.checkpoint.step // self.iterations
-            start_iter = self.checkpoint.step % self.iterations
+            INFO("Checkpoint restored from " + self.manager_model.latest_checkpoint)
+            start_epoch = int(self.checkpoint.step // self.iterations)
+            start_iter = int(self.checkpoint.step % self.iterations)
+            self.checkpoint.step.assign_add(1)
         else:
             WARN("No checkpoint was found. Initializing from scratch.")
             start_epoch, start_iter = 0, 0
