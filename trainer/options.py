@@ -62,8 +62,11 @@ def parse_args():
     ################
     #   TRAINING   #
     ################
-    parser.add_argument('--epochs', type=int, default=200,
+    parser.add_argument('--total_epochs', type=int, default=200,
                            help='Total number of epochs. ' + INFO_COLOR('Default: 200'))
+    parser.add_argument('--decay_epoch', type=int, default=100,
+                           help='Iteration from which the learning rate begins to decay linearly to zero. ' +
+                                 INFO_COLOR('Default: 100'))
     parser.add_argument('--prob_dataset', type=int, default=0.6,
                            help='Percentage of the maximum number elements in the dataset that will be buffered when prefetching. ' +
                                  INFO_COLOR('Default: 0.6'))
@@ -77,7 +80,7 @@ def parse_args():
                                  INFO_COLOR("Default: './results/ADEChallengeData2016/'"))
 
     # SAVE MODEL
-    parser.add_argument('--save_model_freq', type=int, default=10,
+    parser.add_argument('--save_model_freq', type=int, default=100,
                            help='Frequeny to save the checkpoints. '+
                                  INFO_COLOR('Default: 10'))
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints/ADEChallengeData2016/',

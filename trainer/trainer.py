@@ -28,10 +28,13 @@ class Trainer(object):
         # self.checkpoint_dir = args.checkpoint_dir
 
         # Training
-        self.epochs = args.epochs
+        self.total_epochs = args.total_epochs
 
         # Learning rate
         self.lr = args.lr
+        self.decay_epoch = args.decay_epoch
+        self.no_TTUR = args.no_TTUR
+        self.lrd = args.lr/(self.total_epochs-self.decay_epoch)
 
         # Load and shuffle data
         images, segmaps = load_data(args.image_dir, args.label_dir,
@@ -68,12 +71,14 @@ class Trainer(object):
 
         # Define de checkpoint-saver
         self.checkpoint = tf.train.Checkpoint(step=tf.Variable(1),
+                                              lr=tf.Variable(self.lr),
                                               generator_optimizer=self.generator_optimizer,
                                               discriminator_optimizer=self.discriminator_optimizer,
                                               encoder=encoder,
                                               generator=generator,
                                               discriminator=discriminator) if args.use_vae else \
                           tf.train.Checkpoint(step=tf.Variable(1),
+                                              lr=tf.Variable(self.lr),
                                               generator_optimizer=self.generator_optimizer,
                                               discriminator_optimizer=self.discriminator_optimizer,
                                               generator=generator,
@@ -97,9 +102,17 @@ class Trainer(object):
             start_epoch, start_iter = 0, 0
         print()
 
-        for epoch in range(start_epoch, self.epochs):
+        for epoch in range(start_epoch, self.total_epochs):
+            if epoch+1 >= self.decay_epoch:
+                self.update_learning_rate()
+
             # Train
             for n, (real_image, segmap) in self.photos_and_segmaps.take(self.iterations).enumerate(start=start_iter):
+                # With `clear_session()` called at the beginning, Keras starts with a blank state at each iteration
+                # and memory consumption is constant over time.
+                tf.keras.backend.clear_session()
+
+                # Train
                 fake_image = self.train_step(real_image, segmap, epoch+1, n+1)
 
                 # Save (checkpoint) model every self.save_model_freq steps
@@ -149,9 +162,16 @@ class Trainer(object):
 
             return fake_image
 
+    def update_learning_rate(self):
+        self.lr = self.lr - self.lrd
+        (g_lr, d_lr) = (self.lr/2, self.lr*2) if not self.no_TTUR else (self.lr, self.lr)
+
+        self.generator_optimizer.lr.assign(g_lr)
+        self.discriminator_optimizer.lr.assign(d_lr)
+
 
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
-        tf.print("\033[22;33m[Epoch: %3d/%d, Iter: " % (epoch, self.epochs), iteration, "/%d," % self.iterations,
+        tf.print("\033[22;33m[Epoch: %3d/%d, Iter: " % (epoch, self.total_epochs), iteration, "/%d," % self.iterations,
                              " Time: %.3f] \033[0m" % (time.time() - self.start_time), end=' ', sep='')
 
         tf.print("\033[01;34mGenerator loss:\033[22;34m", end='')
