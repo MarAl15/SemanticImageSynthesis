@@ -70,7 +70,7 @@ python train.py
     - `--img_height` The height size of image.
     - `--img_width` The width size of image.
     - `--crop_size`  Desired size of the square crop.
-    - `--batch_size` Input batch size.
+    - `--batch_size` Mini-batch size.
 - **Image Encoder**
     - `--use_vae` If specified, enable training with an image encoder.
     - `--lambda_kld` Weight for KL Divergence loss.
@@ -82,21 +82,25 @@ python train.py
     - `--num_discriminators` Number of discriminators to be used in multiscale.
 - **Adam Optimizer**
     - `--lr` Initial learning rate.
-    - `--beta1` Exponential decay rate for the 1st moment.
-    - `--beta2` Exponential decay rate for the 2nd moment.
+    - `--beta1` Hyperparameter to control the 1st moment decay.
+    - `--beta2` Hyperparameter to control the 2nd moment decay.
 - **Training**
-    - `--epochs` Total number of epochs.
+    - `--total_epochs` Total number of epochs.
+    - `--decay_epoch` Epoch from which the learning rate begins to decay linearly to zero.
+    - `--prob_dataset` Percentage of the maximum number elements in the dataset that will be used (and shuffled) for training and shuffle on each epoch.
+    - `--print_info_freq` Frequency to print information.
+    - `--log_dir` Directory name to log losses.
     - `--save_img_freq` Frequency to autosave the fake image, associated segmentation map and real image.
     - `--results_dir` Directory name to save the images.
     - `--save_model_freq` Frequeny to save the checkpoints.
     - `--checkpoint_dir` Directory name to save them.
-    - `--checkpoint_filename` Basename to save them.
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.
 
 ## Main references
 
 - _(Park et al.)_ T. Park, M. Liu, T. Wang, J. Zhu. "[Semantic Image Synthesis with Spatially-Adaptive Normalization](https://arxiv.org/abs/1903.07291)"
+- [Tensorflow Documentation](https://www.tensorflow.org/)
 
 ## Author
 
