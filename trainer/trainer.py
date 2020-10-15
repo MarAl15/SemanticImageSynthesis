@@ -25,7 +25,9 @@ class Trainer(object):
 
         # Save model
         self.save_model_freq = args.save_model_freq
-        # self.checkpoint_dir = args.checkpoint_dir
+
+        # Print info
+        self.print_info_freq = args.print_info_freq
 
         # Training
         self.total_epochs = args.total_epochs
@@ -107,7 +109,7 @@ class Trainer(object):
                 self.update_learning_rate()
 
             # Train
-            for n, (real_image, segmap) in self.photos_and_segmaps.take(self.iterations).enumerate(start=start_iter):
+            for n, (real_image, segmap) in self.photos_and_segmaps.take(self.iterations-start_iter+1).enumerate(start=start_iter):
                 # With `clear_session()` called at the beginning, Keras starts with a blank state at each iteration
                 # and memory consumption is constant over time.
                 tf.keras.backend.clear_session()
@@ -157,8 +159,9 @@ class Trainer(object):
             self.generator_optimizer.apply_gradients(zip(generator_gradients, self.generator_vars))
             self.discriminator_optimizer.apply_gradients(zip(discriminator_gradients, self.discriminator_vars))
 
-            # Display information
-            self.print_info(total_generator_loss, generator_losses, total_discriminator_loss, discriminator_losses, epoch, iteration)
+            # Display information every self.print_info_freq steps
+            if (self.checkpoint.step % self.print_info_freq) == 0:
+                self.print_info(total_generator_loss, generator_losses, total_discriminator_loss, discriminator_losses, epoch, iteration)
 
             return fake_image
 

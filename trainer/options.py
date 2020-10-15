@@ -71,6 +71,11 @@ def parse_args():
                            help='Percentage of the maximum number elements in the dataset that will be buffered when prefetching. ' +
                                  INFO_COLOR('Default: 0.6'))
 
+    # PRINT INFO
+    parser.add_argument('--print_info_freq', type=int, default=10,
+                           help='Frequency to print information. '+
+                                 INFO_COLOR('Default: 10'))
+
     # SAVE IMAGES
     parser.add_argument('--save_img_freq', type=int, default=100,
                            help='Frequency to autosave the fake image, associated segmentation map and real image. '+
