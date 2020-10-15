@@ -94,16 +94,16 @@ class Trainer(object):
         print()
         if self.manager_model.latest_checkpoint:
             INFO("Checkpoint restored from " + self.manager_model.latest_checkpoint)
-            start_epoch = int(self.checkpoint.step // self.iterations)
-            start_iter = int(self.checkpoint.step % self.iterations)
+            start_epoch = int(self.checkpoint.step // self.iterations) + 1
+            start_iter = int(self.checkpoint.step % self.iterations) + 1
             self.checkpoint.step.assign_add(1)
         else:
             WARN("No checkpoint was found. Initializing from scratch.")
-            start_epoch, start_iter = 0, 0
+            start_epoch, start_iter = 1, 1
         print()
 
         for epoch in range(start_epoch, self.total_epochs):
-            if epoch+1 >= self.decay_epoch:
+            if epoch>=self.decay_epoch and start_iter==1:
                 self.update_learning_rate()
 
             # Train
@@ -113,26 +113,26 @@ class Trainer(object):
                 tf.keras.backend.clear_session()
 
                 # Train
-                fake_image = self.train_step(real_image, segmap, epoch+1, n+1)
+                fake_image = self.train_step(real_image, segmap, epoch, n)
 
                 # Save (checkpoint) model every self.save_model_freq steps
                 if (self.checkpoint.step % self.save_model_freq) == 0:
-                    INFO('Saving model at epoch %d and iteration %d...' % (epoch+1, n+1))
+                    INFO('Saving model at epoch %d and iteration %d...' % (epoch, n))
                     self.manager_model.save()
 
                 # Save image every self.save_img_freq steps
                 if (self.checkpoint.step % self.save_img_freq) == 0:
-                    self.save_img(real_image, 'real_image', epoch+1, n+1)
-                    self.save_img(segmap, 'segmentation_map', epoch+1, n+1)
-                    self.save_img(fake_image, 'synthesized_image', epoch+1, n+1)
+                    self.save_img(real_image, 'real_image', epoch, n)
+                    self.save_img(segmap, 'segmentation_map', epoch, n)
+                    self.save_img(fake_image, 'synthesized_image', epoch, n)
 
                 self.checkpoint.step.assign_add(1)
 
             # Save (checkpoint) model at the end of each epoch
-            INFO('Saving model at end of the epoch %d...' % (epoch+1, n+1))
+            INFO('Saving model at end of the epoch %d...' % (epoch, n))
             self.manager_model.save()
 
-            start_iter = 0
+            start_iter = 1
 
     @tf.function
     def train_step(self, real_image, segmap, epoch, iteration):
