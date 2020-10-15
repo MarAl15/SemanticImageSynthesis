@@ -71,7 +71,7 @@ class Trainer(object):
             self.generator_vars += encoder.trainable_variables
         self.discriminator_vars = discriminator.trainable_variables
 
-        # Define de checkpoint-saver
+        # Define checkpoint-saver
         self.checkpoint = tf.train.Checkpoint(step=tf.Variable(1),
                                               lr=tf.Variable(self.lr),
                                               generator_optimizer=self.generator_optimizer,
@@ -86,6 +86,9 @@ class Trainer(object):
                                               generator=generator,
                                               discriminator=discriminator)
         self.manager_model = tf.train.CheckpointManager(self.checkpoint, args.checkpoint_dir, max_to_keep=3)
+
+        # Define summary file writer to log losses
+        self.summary_writer = tf.summary.create_file_writer(os.path.join(args.log_dir, "fit/"))
 
 
     def fit(self):
@@ -117,6 +120,9 @@ class Trainer(object):
                 # Train
                 fake_image = self.train_step(real_image, segmap, epoch, n)
 
+                # Force the summary writer to write to disk
+                self.summary_writer.flush()
+
                 # Save (checkpoint) model every self.save_model_freq steps
                 if (self.checkpoint.step % self.save_model_freq) == 0:
                     INFO('Saving model at epoch %d and iteration %d...' % (epoch, n))
@@ -131,7 +137,7 @@ class Trainer(object):
                 self.checkpoint.step.assign_add(1)
 
             # Save (checkpoint) model at the end of each epoch
-            INFO('Saving model at end of the epoch %d...' % (epoch, n))
+            INFO('Saving model at end of the epoch %d...' % epoch)
             self.manager_model.save()
 
             start_iter = 1
@@ -162,6 +168,17 @@ class Trainer(object):
             # Display information every self.print_info_freq steps
             if (self.checkpoint.step % self.print_info_freq) == 0:
                 self.print_info(total_generator_loss, generator_losses, total_discriminator_loss, discriminator_losses, epoch, iteration)
+
+            # Log the losses to TensorBoard
+            with self.summary_writer.as_default():
+                tf.summary.scalar('gen_total_loss', total_generator_loss, step=epoch)
+                for key in generator_losses.keys():
+                    tf.summary.scalar('gen_'+key.lower()+'_loss', generator_losses[key], step=epoch)
+
+                tf.summary.scalar('disc_total_loss', total_discriminator_loss, step=epoch)
+                tf.summary.scalar('disc_fake_loss', discriminator_losses['HingeFake'], step=epoch)
+                tf.summary.scalar('disc_real_loss', discriminator_losses['HingeReal'], step=epoch)
+
 
             return fake_image
 

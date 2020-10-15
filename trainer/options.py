@@ -75,6 +75,9 @@ def parse_args():
     parser.add_argument('--print_info_freq', type=int, default=10,
                            help='Frequency to print information. '+
                                  INFO_COLOR('Default: 10'))
+    parser.add_argument('--log_dir', type=str, default='./logs/ADEChallengeData2016/',
+                           help='Directory name to log losses. '+
+                                 INFO_COLOR("Default: './logs/ADEChallengeData2016/'"))
 
     # SAVE IMAGES
     parser.add_argument('--save_img_freq', type=int, default=100,
