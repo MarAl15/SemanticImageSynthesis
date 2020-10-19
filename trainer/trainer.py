@@ -9,7 +9,7 @@ from model.model import Model
 from model.networks.encoder import Encoder
 from model.networks.generator import Generator
 from model.networks.discriminator import Discriminator
-from utils.load_data import load_data, get_all_labels
+from utils.load_data import load_data
 from utils.pretty_print import *
 
 
@@ -39,7 +39,7 @@ class Trainer(object):
         self.lrd = args.lr/(self.total_epochs-self.decay_epoch)
 
         # Load and shuffle data
-        images, segmaps = load_data(args.image_dir, args.label_dir,
+        images, segmaps, self.n_labels = load_data(args.image_dir, args.label_dir, args.semantic_label_path,
                                     img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
                                     batch_size=args.batch_size, pairing_check=args.pairing_check)
         self.iterations = int(tf.constant(args.prob_dataset)*tf.cast(images.cardinality()/args.batch_size, 'float'))
@@ -47,7 +47,6 @@ class Trainer(object):
 
         # Define Encoder, Generator, Discriminator
         img_shape = [args.batch_size, args.crop_size, args.crop_size, 3]
-        self.n_labels = len(get_all_labels(segmaps, args.semantic_label_path))
         segmap_shape = [args.batch_size, args.crop_size, args.crop_size, self.n_labels]
         if args.use_vae:
             encoder = Encoder(img_shape, crop_size=args.crop_size, num_filters=args.num_encoder_filters)

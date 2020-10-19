@@ -65,11 +65,12 @@ def parse_args():
     parser.add_argument('--total_epochs', type=int, default=200,
                            help='Total number of epochs. ' + INFO_COLOR('Default: 200'))
     parser.add_argument('--decay_epoch', type=int, default=100,
-                           help='Iteration from which the learning rate begins to decay linearly to zero. ' +
+                           help='Epoch from which the learning rate begins to decay linearly to zero. ' +
                                  INFO_COLOR('Default: 100'))
-    parser.add_argument('--prob_dataset', type=int, default=0.6,
+    parser.add_argument('--prob_dataset', type=float, default=1.0,
                            help='Percentage of the maximum number elements in the dataset that will be buffered when prefetching. ' +
-                                 INFO_COLOR('Default: 0.6'))
+                                 INFO_COLOR('Default: 1.0'))
+
 
     # PRINT INFO
     parser.add_argument('--print_info_freq', type=int, default=10,

@@ -13,8 +13,8 @@ from utils.pretty_print import *
 import tensorflow as tf
 
 
-def load_data(image_folder, segmap_folder,
-              img_size=(286,286), resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR,
+def load_data(image_folder, segmap_folder, semantic_label_path,
+              img_size=(286,286),
               crop_size=256, batch_size=1, pairing_check=True):
     """Loads the images and segmentation masks."""
     assert os.path.isdir(image_folder), ERROR_COLOR('%s is not a valid directory'%image_folder)
@@ -35,11 +35,18 @@ def load_data(image_folder, segmap_folder,
 
     print()
     INFO("Loading images...")
-    images = load_images(image_folder, img_size, crop_size, resize_method=resize_method, color_mode='rgb', batch_size=batch_size, normalize=True)
+    images = load_images(image_folder, img_size, crop_size, batch_size=batch_size)
 
     print()
     INFO("Loading segmentation masks...")
-    segmaps = load_images(segmap_folder, img_size, crop_size, resize_method=resize_method, color_mode='grayscale', batch_size=batch_size, normalize=False)
+    segmaps = load_images(segmap_folder, img_size, crop_size, resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, color_mode='grayscale',
+                          batch_size=batch_size, normalize=False)
+
+    # Assign ids between 0 and #labels
+    labels = get_all_labels(segmaps, semantic_label_path)
+    def new_labels(img_batch):
+        return change_labels(img_batch, labels)
+    segmaps = segmaps.map(new_labels, num_parallel_calls=12)
 
     # print()
     # INFO("Creating one-hot label maps...")
@@ -52,7 +59,7 @@ def load_data(image_folder, segmap_folder,
     # segmaps_onehot = segmaps.map(one_hot, num_parallel_calls=12)
 
     # return images, segmaps, segmaps_onehot
-    return images, segmaps
+    return images, segmaps, len(labels)
 
 
 def files_match(path1, path2):
@@ -110,3 +117,14 @@ def get_all_labels(segmap_dataset, semantic_label_path):
             f.write(", ".join(str(v) for v in labels))
 
     return labels
+
+def change_labels(img, labels):
+    """Assigns a new id between 0 and the total number of labels to each label."""
+    id_img = tf.fill(img.shape, len(labels))
+
+    for id_label, label in enumerate(labels):
+        # img[img==label] = id_label
+        id_img = tf.where(tf.equal(img, label),
+                          tf.fill(img.shape, id_label), id_img)
+
+    return tf.cast(id_img, tf.uint8)
