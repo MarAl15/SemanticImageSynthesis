@@ -91,6 +91,7 @@ class Trainer(object):
 
 
     def fit(self):
+        """Trains the model for a fixed number of epochs."""
         self.start_time = time.time()
 
         # Restore the latest checkpoint in checkpoint_dir
@@ -182,6 +183,7 @@ class Trainer(object):
             return fake_image
 
     def update_learning_rate(self):
+        """Applies linear decay to the learning rate."""
         self.lr = self.lr - self.lrd
         (g_lr, d_lr) = (self.lr/2, self.lr*2) if not self.no_TTUR else (self.lr, self.lr)
 
@@ -190,6 +192,7 @@ class Trainer(object):
 
 
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
+        """Displays information."""
         tf.print("\033[22;33m[Epoch: %3d/%d, Iter: " % (epoch, self.total_epochs), iteration, "/%d," % self.iterations,
                              " Time: %.3f] \033[0m" % (time.time() - self.start_time), end=' ', sep='')
 
@@ -212,8 +215,9 @@ class Trainer(object):
         tf.print('\033[0m', sep='')
 
 
-    def save_img(self, img, type_img, epoch, iteration):
-        img = tf.squeeze(img, 0)
+    def save_img(self, img_batch, type_img, epoch, iteration):
+        """Saves the first image of the batch."""
+        img = img_batch[0]
         if not os.path.exists(self.results_dir):
             os.makedirs(self.results_dir)
 
