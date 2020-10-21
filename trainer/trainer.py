@@ -107,7 +107,7 @@ class Trainer(object):
             start_epoch, start_iter = 1, 1
         print()
 
-        for epoch in range(start_epoch, self.total_epochs):
+        for epoch in range(start_epoch, self.total_epochs+1):
             if epoch>=self.decay_epoch and start_iter==1:
                 self.update_learning_rate()
 
