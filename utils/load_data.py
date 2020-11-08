@@ -113,6 +113,8 @@ def get_all_labels(segmap_dataset, semantic_label_path):
                 labels = segmap_labels.numpy()
                 first = False
 
+        labels.sort()
+
         with open(semantic_label_path, 'w') as f :
             f.write(", ".join(str(v) for v in labels))
 
