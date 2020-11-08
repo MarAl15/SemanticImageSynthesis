@@ -14,22 +14,24 @@ class Model(object):
             self.encoder = encoder
         # Generator
         self.generator = generator
-        # Discriminator
-        self.discriminator = discriminator
-        self.num_discriminators = args.num_discriminators
 
-        # Loss weights
-        if self.use_vae:
-            self.lambda_kld = args.lambda_kld
-        # To use or not discriminator feature matching loss
-        self.no_feature_loss = args.no_feature_loss
-        if not self.no_feature_loss:
-            self.lambda_features = args.lambda_features
-        # To use or not VGG loss
-        self.no_vgg_loss = args.no_vgg_loss
-        if not self.no_vgg_loss:
-            self.lambda_vgg = args.lambda_vgg
-            self.vgg_loss = VGGLoss([args.batch_size, args.crop_size, args.crop_size, 3])
+        if training:
+            # Discriminator
+            self.discriminator = discriminator
+            self.num_discriminators = args.num_discriminators
+
+            # Loss weights
+            if self.use_vae:
+                self.lambda_kld = args.lambda_kld
+            # To use or not discriminator feature matching loss
+            self.no_feature_loss = args.no_feature_loss
+            if not self.no_feature_loss:
+                self.lambda_features = args.lambda_features
+            # To use or not VGG loss
+            self.no_vgg_loss = args.no_vgg_loss
+            if not self.no_vgg_loss:
+                self.lambda_vgg = args.lambda_vgg
+                self.vgg_loss = VGGLoss([args.batch_size, args.crop_size, args.crop_size, 3])
 
         # Training?
         self.training = training
@@ -105,7 +107,7 @@ class Model(object):
             mean, log_var = self.encoder(real_image, training=True)
             z = tf.math.multiply(tf.random.normal(mean.shape), tf.math.exp(0.5 * log_var)) + mean
 
-            return self.generator([segmap_image, z]), [mean, log_var]
+            return self.generator([segmap_image, z], training=True), [mean, log_var]
 
         return self.generator(segmap_image, training=True), None
 
