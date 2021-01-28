@@ -64,7 +64,7 @@ def parse_args(train=True, one=False):
 
     if train or not one:
         # BATCHES
-        parser.add_argument('--batch_size', type=int, default=2,
+        parser.add_argument('--batch_size', type=int, default=1,
                                help='Input batch size. ' + INFO_COLOR('Default: 1'))
 
     if train:

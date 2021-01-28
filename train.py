@@ -1,10 +1,12 @@
 """
     Train.
 """
+# import os
+# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 from utils.pretty_print import *
-from trainer.trainer import Trainer
-from trainer.options import parse_args
+from trainer_tester.trainer import Trainer
+from trainer_tester.options import parse_args
 
 
 def main():

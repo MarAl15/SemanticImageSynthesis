@@ -44,6 +44,7 @@ class Trainer(object):
                                     batch_size=args.batch_size, pairing_check=args.pairing_check)
         self.iterations = int(tf.constant(args.prob_dataset)*tf.cast(images.cardinality()/args.batch_size, 'float'))
         self.photos_and_segmaps = tf.data.Dataset.zip((images, segmaps)).shuffle(self.iterations, reshuffle_each_iteration=True)
+        # self.photos_and_segmaps = tf.data.Dataset.zip((images, segmaps))
 
         # Define Encoder, Generator, Discriminator
         img_shape = [args.batch_size, args.crop_size, args.crop_size, 3]
@@ -92,8 +93,6 @@ class Trainer(object):
 
     def fit(self):
         """Trains the model for a fixed number of epochs."""
-        self.start_time = time.time()
-
         # Restore the latest checkpoint in checkpoint_dir
         self.checkpoint.restore(self.manager_model.latest_checkpoint)
         print()
@@ -108,6 +107,7 @@ class Trainer(object):
         print()
 
         for epoch in range(start_epoch, self.total_epochs+1):
+            start_time = time.time()
             if epoch>=self.decay_epoch and start_iter==1:
                 self.update_learning_rate()
 
@@ -135,6 +135,9 @@ class Trainer(object):
                     self.save_img(fake_image, 'synthesized_image', epoch, n)
 
                 self.checkpoint.step.assign_add(1)
+
+            INFO('Time taken for epoch %d is %.3f sec' % (epoch, time.time()-start_time))
+
 
             # Save (checkpoint) model at the end of each epoch
             INFO('Saving model at end of the epoch %d...' % epoch)
@@ -193,8 +196,7 @@ class Trainer(object):
 
     def print_info(self, generator_loss, generator_losses, discriminator_loss, discriminator_losses, epoch, iteration):
         """Displays information."""
-        tf.print("\033[22;33m[Epoch: %3d/%d, Iter: " % (epoch, self.total_epochs), iteration, "/%d," % self.iterations,
-                             " Time: %.3f] \033[0m" % (time.time() - self.start_time), end=' ', sep='')
+        tf.print("\033[22;33m[Epoch: %3d/%d, Iter: " % (epoch, self.total_epochs), iteration, "/%d] \033[0m" % self.iterations, end=' ', sep='')
 
         tf.print("\033[01;34mGenerator loss:\033[22;34m", end='')
         tf_print_float(generator_loss)

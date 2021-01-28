@@ -83,7 +83,7 @@ def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod
     images = images.map(lambda img: tf.image.random_crop(img, size=[batch_size, crop_size, crop_size, num_channels]), num_parallel_calls=12)
 
     if (normalize):
-        INFO(" - Standardizing...")
+        INFO(" - Normalizing to [-1,1]...")
         #  The RGB channel values are in the [0, 255] range. This is not ideal for a neural network.
         # For this reason, we will standardize values to be in the [-1, 1].
         def normalize(img):
