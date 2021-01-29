@@ -101,6 +101,18 @@ python train.py
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.
 
+#### Example
+
+```
+$ python train.py --use_vae --image_dir "./datasets/ADE5K/images/" --label_dir "./datasets/ADE5K/annotations/" \
+                  --semantic_label_path './datasets/ADE5K/semantic_labels.txt' \
+                  --checkpoint_dir './checkpoints/ADE5K_VAE/' --results_dir './results/ADE5K_VAE/train' \
+                  --decay_epoch 400 --total_epochs 800 --batch_size 2 --print_info_freq 20
+```
+
+![Runtime.](https://github.com/MarAl15/SemanticImageSynthesis/blob/master/images/execution.png)
+
+
 ## Testing
 
 ### One image
