@@ -1,4 +1,4 @@
-[![Status](https://img.shields.io/badge/Status-InProgress-green.svg)](https://github.com/MarAl15/SemanticImageSynthesis/blob/master/README.md)
+<!--[![Status](https://img.shields.io/badge/Status-InProgress-green.svg)](https://github.com/MarAl15/SemanticImageSynthesis/blob/master/README.md)-->
 [![Language](https://img.shields.io/badge/Language-Python3.8-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-Apache-red.svg)](https://github.com/MarAl15/SemanticImageSynthesis/blob/master/LICENSE)
 
@@ -6,6 +6,7 @@
 # Semantic Image Synthesis
 
 Photorealistic images creation from semantic segmentation masks, which are labeled sketches that depict the layout of a scene.
+
 
 ## Installation
 
@@ -67,6 +68,7 @@ python train.py
 - **Load data**
     - `--image_dir` Main directory name where the pictures are located.
     - `--label_dir` Main directory name where the semantic segmentation masks are located.
+    - `--semantic_label_path` Filename containing the semantic labels.
     - `--img_height` The height size of image.
     - `--img_width` The width size of image.
     - `--crop_size`  Desired size of the square crop.
@@ -96,6 +98,27 @@ python train.py
     - `--checkpoint_dir` Directory name to save them.
 
 Please use `python train.py --help` or `python train.py -h` to see all the options.
+
+## Testing
+
+### One image
+
+```
+python test_one.py
+```
+
+#### Main options:
+
+- `--label_filename` Semantic segmentation mask filename.
+- `--style_filename` Style filter filename if use VAE.
+- `--use_vae` If specified, enable training with an image encoder.
+- `--semantic_label_path` Filename containing the semantic labels.
+- `--checkpoint_dir` Directory name to restore the latest checkpoint.
+- `--results_dir` Directory name to save the images.
+
+Please use `python test_one.py --help` or `python test_one.py -h` to see all the options.
+
+
 
 ## Main references
 
