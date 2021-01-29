@@ -98,12 +98,12 @@ def parse_args(train=True, one=False):
         parser.add_argument('--save_img_freq', type=int, default=100,
                                help='Frequency to autosave the fake image, associated segmentation map and real image. '+
                                      INFO_COLOR('Default: 100'))
-    parser.add_argument('--results_dir', type=str, default='./results/ADEChallengeData2016/',
+    parser.add_argument('--results_dir', type=str, default='./results/ADEChallengeData2016/' + ('train' if train else 'test'),
                                help='Directory name to save fake images, segmentation maps and real images. '+
-                                     INFO_COLOR("Default: './results/ADEChallengeData2016/'"))
+                                     INFO_COLOR("Default: './results/ADEChallengeData2016/" + ("train'" if train else "test'")))
     # CHECKPOINTS
     parser.add_argument('--checkpoint_dir', type=str, default='./checkpoints/ADEChallengeData2016/',
-                               help='Directory name to save the checkpoints. '+
+                               help=('Directory name to save the checkpoints. ' if train else 'Directory name to restore the latest checkpoint. ')+
                                      INFO_COLOR("Default: './checkpoints/ADEChallengeData2016/'"))
 
 

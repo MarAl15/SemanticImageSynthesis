@@ -59,7 +59,6 @@ class TesterOne(object):
                                        normalize=False)
 
         segmap = change_labels(segmap, self.labels)
-        print(segmap)
 
         # Transform the segmentation map to one-hot encoding
         segmap = tf.one_hot(tf.squeeze(segmap, -1), self.n_labels)
