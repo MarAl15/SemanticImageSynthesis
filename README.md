@@ -7,6 +7,9 @@
 
 Photorealistic images creation from semantic segmentation masks, which are labeled sketches that depict the layout of a scene.
 
+![Web application.](https://github.com/MarAl15/SemanticImageSynthesis/blob/master/images/web.png)
+[**DibPhot (Web Application)**](https://bitbucket.org/MarAl15/dibphot) | [**Report (Spanish)**](https://bitbucket.org/MarAl15/dibphot/src/master/report(Spanish).pdf)
+
 The aim is to give realism to the semantic sketch, known as a segmentation map, by automatically adding colours, textures, shadows and reflections, among other details. To this purpose, techniques based on artificial neural networks is used, specifically generative models that allow images to be synthesised without the need to specify a symbolic model in detail. Such synthesised image can also be controlled by a style image that allows the scene’s setting to be changed. For example, a daytime scene can be turned into a sunset. To achieve the style transfer, a variational autoencoder is used and connected to the generative adversarial network in charge of image synthesis.
 
 
