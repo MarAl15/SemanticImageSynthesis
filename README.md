@@ -39,7 +39,7 @@ _This code was developed and tested on an Nvidia GeForce RTX 3060 with CUDA 10.1
 
 ## Dataset preparation
 
-The [ADE20K dataset](http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip) must be downloaded beforehand.
+You must download the datasets beforehand. You can download the [ADE20K dataset](http://data.csail.mit.edu/places/ADEchallenge/ADEChallengeData2016.zip) or its subset [ADE20K Outdoors](https://www.kaggle.com/residentmario/ade20k-outdoors/), among others.
 
 _If the error `Input 'filename' of 'ReadFile' Op has type float32 that does not match expected type of string.` is thrown, create new subdirectories to store them in. For instance,_
 ```
