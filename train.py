@@ -1,8 +1,12 @@
 """
     Train.
 """
+
+########################################################################
+## Uncomment if you want to disable Tensorflow debugging information. ##
 # import os
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+########################################################################
 import tensorflow as tf
 from utils.pretty_print import *
 from trainer_tester.trainer import Trainer
@@ -15,8 +19,6 @@ def main():
 
     # Parse arguments
     args = parse_args()
-
-    # ~ with tf.device("/cpu:0"):
 
     # Initialize trainer
     trainer = Trainer(args)
