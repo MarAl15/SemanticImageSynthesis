@@ -1,5 +1,5 @@
 <!--[![Status](https://img.shields.io/badge/Status-InProgress-green.svg)](https://github.com/MarAl15/SemanticImageSynthesis/blob/master/README.md)-->
-[![Language](https://img.shields.io/badge/Language-Python3.8-blue.svg)](https://www.python.org/)
+[![Language](https://img.shields.io/badge/Language-Python3.8/3.9-blue.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-Apache-red.svg)](https://github.com/MarAl15/SemanticImageSynthesis/blob/master/LICENSE)
 
 
@@ -35,9 +35,9 @@ Install dependencies.
 pip install -r requirements.txt
 ```
 
-Please note that this code uses Tensorflow 2.3.0 with GPU support. Therefore, you must have CUDA and cuDNN installed beforehand.
+Please note that this code uses Tensorflow with GPU support. You must therefore have CUDA and cuDNN installed beforehand.
 
-_This code was developed and tested on an Nvidia GeForce RTX 3060 with CUDA 10.1 and cuDNN 7.6.5._
+_This code has been tested on an NVIDIA GeForce RTX 2060 with CUDA 10.1 + cuDNN 7.6.5 for TF 2.3.0  and CUDA 11.2 + cuDNN 8.10.0 for TF 2.10.0._
 
 
 ## Dataset preparation
@@ -85,8 +85,6 @@ python train.py
     - `--z_dim` Dimension of the latent z vector.
     - `--lambda_features` Weight for feature matching loss.
     - `--lambda_vgg` Weight for VGG loss.
-- **Discriminator**
-    - `--num_discriminators` Number of discriminators to be used in multiscale.
 - **Adam Optimizer**
     - `--lr` Initial learning rate.
     - `--beta1` Hyperparameter to control the 1st moment decay.
