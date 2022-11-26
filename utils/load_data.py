@@ -15,7 +15,7 @@ import tensorflow as tf
 
 def load_data(image_folder, segmap_folder, semantic_label_path,
               img_size=(286,286),
-              crop_size=256, batch_size=1, pairing_check=True):
+              crop_size=(256,256), batch_size=1, pairing_check=True):
     """Loads the images and segmentation masks."""
     assert os.path.isdir(image_folder), ERROR_COLOR('%s is not a valid directory'%image_folder)
     assert os.path.isdir(segmap_folder), ERROR_COLOR('%s is not a valid directory'%segmap_folder)
@@ -35,7 +35,7 @@ def load_data(image_folder, segmap_folder, semantic_label_path,
 
     print()
     INFO("Loading images...")
-    images = load_images(image_folder, img_size, crop_size, batch_size=batch_size)
+    images = load_images(image_folder, img_size, crop_size, resize_method=tf.image.ResizeMethod.NEAREST_NEIGHBOR, batch_size=batch_size)
 
     print()
     INFO("Loading segmentation masks...")
@@ -80,7 +80,7 @@ def load_images(folder, img_size, crop_size, resize_method=tf.image.ResizeMethod
 
     INFO(" - Cropping...")
     num_channels = 3 if color_mode=='rgb' else 1
-    images = images.map(lambda img: tf.image.random_crop(img, size=[batch_size, crop_size, crop_size, num_channels]), num_parallel_calls=12)
+    images = images.map(lambda img: tf.image.random_crop(img, size=[batch_size, crop_size[0], crop_size[1], num_channels]), num_parallel_calls=12)
 
     if (normalize):
         INFO(" - Normalizing to [-1,1]...")

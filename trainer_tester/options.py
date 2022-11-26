@@ -59,8 +59,10 @@ def parse_args(train=True, one=False):
                            help='The width size of image. ' + INFO_COLOR('Default: 286'))
 
     # CROP IMAGES
-    parser.add_argument('--crop_size', type=int, default=256,
-                           help='Desired size of the square crop. ' + INFO_COLOR('Default: 256'))
+    parser.add_argument('--crop_height', type=int, default=256,
+                           help='Desired height of the crop. ' + INFO_COLOR('Default: 256'))
+    parser.add_argument('--crop_width', type=int, default=256,
+                           help='Desired width of the crop. ' + INFO_COLOR('Default: 256'))
 
     if train or not one:
         # BATCHES

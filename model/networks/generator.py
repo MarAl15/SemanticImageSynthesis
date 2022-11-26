@@ -26,7 +26,8 @@ def Generator(segmap_shape, z_dim=256, num_upsampling_layers='more', num_filters
 
     with tf.compat.v1.variable_scope('Generator'):
         # crop_size = segmap_width or segmapt_height
-        s_dim = segmap_shape[1] // (2**num_up_layers)
+        h_dim = segmap_shape[1] // (2**num_up_layers)
+        w_dim = segmap_shape[2] // (2**num_up_layers)
 
         batch_size = segmap_shape[0]
         k_init = 16 * num_filters
@@ -35,10 +36,10 @@ def Generator(segmap_shape, z_dim=256, num_upsampling_layers='more', num_filters
         if use_vae:
             # if z is None:
                 # z = tf.keras.backend.random_normal([batch_size, z_dim], dtype=tf.dtypes.float32)
-            x = tf.keras.layers.Dense(k_init*s_dim*s_dim, kernel_initializer=weight_initializer())(z)
-            x = tf.reshape(x, [batch_size, s_dim, s_dim, k_init])
+            x = tf.keras.layers.Dense(k_init*h_dim*w_dim, kernel_initializer=weight_initializer())(z)
+            x = tf.reshape(x, [batch_size, h_dim, w_dim, k_init])
         else:
-            x = tf.image.resize(images=segmap, size=[s_dim, s_dim],
+            x = tf.image.resize(images=segmap, size=[h_dim, w_dim],
                                 method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)
             x = Conv2d(x, k_init, kernel_size=3, padding=1)
 

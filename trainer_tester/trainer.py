@@ -40,17 +40,17 @@ class Trainer(object):
 
         # Load and shuffle data
         images, segmaps, self.n_labels = load_data(args.image_dir, args.label_dir, args.semantic_label_path,
-                                    img_size=(args.img_height,args.img_width), crop_size=args.crop_size,
+                                    img_size=(args.img_height,args.img_width), crop_size=(args.crop_height,args.crop_width),
                                     batch_size=args.batch_size, pairing_check=args.pairing_check)
         self.iterations = int(tf.constant(args.prob_dataset)*tf.cast(images.cardinality()/args.batch_size, 'float'))
         self.photos_and_segmaps = tf.data.Dataset.zip((images, segmaps)).shuffle(self.iterations, reshuffle_each_iteration=True)
         # self.photos_and_segmaps = tf.data.Dataset.zip((images, segmaps))
 
         # Define Encoder, Generator, Discriminator
-        img_shape = [args.batch_size, args.crop_size, args.crop_size, 3]
-        segmap_shape = [args.batch_size, args.crop_size, args.crop_size, self.n_labels]
+        img_shape = [args.batch_size, args.crop_height, args.crop_width, 3]
+        segmap_shape = [args.batch_size, args.crop_height, args.crop_width, self.n_labels]
         if args.use_vae:
-            encoder = Encoder(img_shape, crop_size=args.crop_size, num_filters=args.num_encoder_filters)
+            encoder = Encoder(img_shape, crop_size=256, num_filters=args.num_encoder_filters)
         generator = Generator(segmap_shape, num_upsampling_layers=args.num_upsampling_layers,
                               num_filters=args.num_generator_filters, use_vae=args.use_vae)
         discriminator = Discriminator(img_shape, segmap_shape, num_discriminators=args.num_discriminators,
@@ -119,6 +119,7 @@ class Trainer(object):
 
                 # Train
                 fake_image = self.train_step(real_image, segmap, epoch, n)
+
 
                 # Force the summary writer to write to disk
                 self.summary_writer.flush()

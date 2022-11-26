@@ -31,7 +31,7 @@ class Model(object):
             self.no_vgg_loss = args.no_vgg_loss
             if not self.no_vgg_loss:
                 self.lambda_vgg = args.lambda_vgg
-                self.vgg_loss = VGGLoss([args.batch_size, args.crop_size, args.crop_size, 3])
+                self.vgg_loss = VGGLoss([args.batch_size, args.crop_height, args.crop_width, 3])
 
         # Training?
         self.training = training
