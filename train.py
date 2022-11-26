@@ -14,11 +14,16 @@ from trainer_tester.options import parse_args
 
 
 def main():
-    gpus= tf.config.experimental.list_physical_devices('GPU')
-    tf.config.experimental.set_memory_growth(gpus[0], True)
-
     # Parse arguments
     args = parse_args()
+
+    # Enable memory growth for a GPU
+    gpus= tf.config.experimental.list_physical_devices('GPU')
+    try:
+        tf.config.experimental.set_memory_growth(gpus[0], True)
+    except:
+        WARN("Invalid device or cannot modify virtual devices once initialized.")
+        pass
 
     # Initialize trainer
     trainer = Trainer(args)
